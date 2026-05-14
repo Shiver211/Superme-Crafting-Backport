@@ -1,0 +1,16 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "T",
+        "S",
+        "S"
+    ],
+    "key": {
+        "S": "minecraft:stick",
+        "T": "supreme_crafting:supreme_table"
+    },
+    "result": {
+        "item": "supreme_crafting:supreme_wrench",
+        "count": 1
+    }
+}

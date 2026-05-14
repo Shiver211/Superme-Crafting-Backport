@@ -1,0 +1,21 @@
+{
+    "type": "supreme_crafting:supreme_shaped",
+    "pattern": [
+        "NIIIN",
+        "IAEAI",
+        "IEBEI",
+        "IAEAI",
+        "NIIIN"
+    ],
+    "key": {
+        "N": "minecraft:diamond",
+        "I": "minecraft:iron_block",
+        "A": "minecraft:anvil",
+        "E": "minecraft:emerald",
+        "B": "minecraft:blaze_rod"
+    },
+    "result": {
+        "item": "minecraft:diamond_block",
+        "count": 1
+    }
+}

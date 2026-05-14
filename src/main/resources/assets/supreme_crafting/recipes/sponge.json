@@ -1,0 +1,20 @@
+{
+    "type": "supreme_crafting:supreme_shaped",
+    "pattern": [
+        "  WWW  ",
+        " W W W ",
+        "W W   W",
+        "W  W  W",
+        "W W   W",
+        " W W W ",
+        "  WWW  "
+    ],
+    "key": {
+        "W": "#wool"
+    },
+    "result": {
+        "item": "minecraft:sponge",
+        "count": 1
+    },
+    "group": "supreme_blocks"
+}

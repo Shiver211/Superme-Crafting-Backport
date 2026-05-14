@@ -1,0 +1,39 @@
+{
+    "type": "supreme_crafting:supreme_shaped",
+    "pattern": [
+        "TTT.TTT.TTT",
+        "TTT.TTT.TTT",
+        "TTT.TTT.TTT",
+        "BBBBBBBBBBB",
+        "BBBBBBBBBBB",
+        "....NNN....",
+        "....SSS....",
+        "....SSS....",
+        "....SSS....",
+        "....SSS....",
+        "....SSS....",
+        "....SSS....",
+        "....SSS....",
+        "....SSS....",
+        "....SSS....",
+        "....SSS....",
+        "....SSS....",
+        "....SSS....",
+        "....SSS....",
+        "....SSS....",
+        "....SSS....",
+        "....SSS....",
+        "....SSS....",
+        "....SSS...."
+    ],
+    "key": {
+        "T": "minecraft:iron_ingot",
+        "B": "minecraft:prismarine",
+        "N": "minecraft:emerald",
+        "S": "minecraft:iron_ingot"
+    },
+    "result": {
+        "item": "minecraft:diamond_sword",
+        "count": 1
+    }
+}

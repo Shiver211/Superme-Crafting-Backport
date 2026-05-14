@@ -1,0 +1,17 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "CCC",
+        "CFH",
+        "CCC"
+    ],
+    "key": {
+        "C": "minecraft:cobblestone",
+        "F": "minecraft:furnace",
+        "H": "minecraft:hopper"
+    },
+    "result": {
+        "item": "supreme_crafting:supreme_furnace_fuel_hatch",
+        "count": 1
+    }
+}

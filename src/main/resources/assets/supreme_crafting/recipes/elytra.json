@@ -1,0 +1,45 @@
+{
+    "type": "supreme_crafting:supreme_shaped",
+    "pattern": [
+        "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "L                          LL                          L",
+        "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
+    ],
+    "key": {
+        "L": "#leather"
+    },
+    "result": {
+        "item": "minecraft:elytra",
+        "count": 1
+    },
+    "group": "supreme_items"
+}

@@ -1,0 +1,29 @@
+tile.supreme_crafting.supreme_table.name=Supreme Table
+tile.supreme_crafting.supreme_furnace_casing.name=Supreme Furnace Casing
+tile.supreme_crafting.supreme_furnace_input_hatch.name=Supreme Furnace Input Hatch
+tile.supreme_crafting.supreme_furnace_output_hatch.name=Supreme Furnace Output Hatch
+tile.supreme_crafting.supreme_furnace_fuel_hatch.name=Supreme Furnace Fuel Hatch
+
+item.supreme_crafting.supreme_wrench.name=Supreme Wrench
+item.supreme_crafting.supreme_furnace_terminal.name=Supreme Furnace Terminal
+item.supreme_crafting.supreme_furnace_bomb_t1.name=Supreme Furnace Bomb (32³)
+item.supreme_crafting.supreme_furnace_bomb_t2.name=Supreme Furnace Bomb (64³)
+item.supreme_crafting.supreme_furnace_bomb_t3.name=Supreme Furnace Bomb (128³)
+item.supreme_crafting.furnace_destroyer.name=Furnace Destroyer
+item.supreme_crafting.supreme_wooden_sword.name=Supreme Wooden Sword
+item.supreme_crafting.supreme_wooden_pickaxe.name=Supreme Wooden Pickaxe
+item.supreme_crafting.supreme_wooden_axe.name=Supreme Wooden Axe
+item.supreme_crafting.supreme_wooden_shovel.name=Supreme Wooden Shovel
+item.supreme_crafting.supreme_wooden_hoe.name=Supreme Wooden Hoe
+
+entity.supreme_crafting.furnace_bomb.name=Supreme Furnace Bomb
+
+itemGroup.supreme_crafting=Supreme Crafting
+
+jei.supreme_crafting.title=Supreme Crafting
+
+container.supreme_crafting.supreme_table=Supreme Table
+container.supreme_crafting.supreme_furnace=Supreme Furnace
+
+supreme_crafting.tooltip.show_recipes=Show recipes for this table
+

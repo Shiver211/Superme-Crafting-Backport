@@ -1,0 +1,21 @@
+{
+    "type": "supreme_crafting:supreme_shaped",
+    "pattern": [
+        " PPPPP ",
+        " P   P ",
+        "   S   ",
+        "   S   ",
+        "   S   ",
+        "   S   ",
+        "   S   "
+    ],
+    "key": {
+        "P": "#plankWood",
+        "S": "#stickWood"
+    },
+    "result": {
+        "item": "minecraft:diamond_pickaxe",
+        "count": 1
+    },
+    "group": "supreme_tools"
+}

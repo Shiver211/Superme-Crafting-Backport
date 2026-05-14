@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "formed=false": { "model": "supreme_crafting:supreme_furnace_input_hatch" },
+    "formed=true":  { "model": "supreme_crafting:supreme_furnace_input_hatch_formed" }
+  }
+}

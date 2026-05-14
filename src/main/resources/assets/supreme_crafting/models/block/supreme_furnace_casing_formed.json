@@ -1,0 +1,7 @@
+{
+  "parent": "block/cube_column",
+  "textures": {
+    "end": "blocks/furnace_top",
+    "side": "blocks/furnace_front_off"
+  }
+}

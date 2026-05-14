@@ -1,0 +1,12 @@
+{
+    "type": "minecraft:crafting_shapeless",
+    "ingredients": [
+        "minecraft:compass",
+        "minecraft:ender_pearl",
+        "supreme_crafting:supreme_furnace_casing"
+    ],
+    "result": {
+        "item": "supreme_crafting:supreme_furnace_terminal",
+        "count": 1
+    }
+}

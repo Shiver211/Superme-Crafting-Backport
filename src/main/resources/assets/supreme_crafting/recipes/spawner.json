@@ -1,0 +1,23 @@
+{
+    "type": "supreme_crafting:supreme_shaped",
+    "pattern": [
+        "IIIIIIIII",
+        "I       I",
+        "I SSSSS I",
+        "I SSSSS I",
+        "I SSSSS I",
+        "I SSSSS I",
+        "I SSSSS I",
+        "I       I",
+        "IIIIIIIII"
+    ],
+    "key": {
+        "I": "#blockIron",
+        "S": "#blockSoulSand"
+    },
+    "result": {
+        "item": "minecraft:mob_spawner",
+        "count": 1
+    },
+    "group": "supreme_blocks"
+}
