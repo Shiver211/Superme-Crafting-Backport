@@ -2,6 +2,7 @@ package com.shiver.supermecrafting;
 
 import com.shiver.supermecrafting.client.ClientRegistry;
 import com.shiver.supermecrafting.crafttweaker.SupremeCraftingTweaker;
+import com.shiver.supermecrafting.furnace.MultiblockSync;
 import com.shiver.supermecrafting.furnace.FurnaceTickHandler;
 import com.shiver.supermecrafting.net.SCNetwork;
 import com.shiver.supermecrafting.registry.SCEntities;
@@ -34,6 +35,7 @@ public class SupremeCrafting {
         SCEntities.register();
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
         MinecraftForge.EVENT_BUS.register(new FurnaceTickHandler());
+        MinecraftForge.EVENT_BUS.register(new MultiblockSync());
         proxy.preInit();
     }
 

@@ -52,6 +52,7 @@ public final class FurnaceTick {
         }
         if (region.isLit() != cooked) {
             region.setLit(cooked);
+            MultiblockSync.add(world, region);
             changed = true;
         }
         if (changed) data.markDirty();

@@ -73,38 +73,41 @@ public final class FurnaceFormation {
         BlockPos max = new BlockPos(maxX, maxY, maxZ);
         EnumFacing front = player == null ? EnumFacing.NORTH : player.getHorizontalFacing().getOpposite();
         Region region = MultiblockRegions.get(world).create(min, max, front);
-        flip(world, min, max, true);
+        flip(world, min, max, true, front);
+        MultiblockSync.add(world, region);
         return Result.success("Supreme Furnace formed: " + xs + "^3", region);
     }
 
     public static void disassemble(World world, Region region) {
-        flip(world, region.min(), region.max(), false);
+        flip(world, region.min(), region.max(), false, region.front());
+        MultiblockSync.remove(world, region);
         MultiblockRegions.get(world).remove(region.getId());
     }
 
-    private static void flip(World world, BlockPos min, BlockPos max, boolean formed) {
+    private static void flip(World world, BlockPos min, BlockPos max, boolean formed, EnumFacing front) {
         for (int x = min.getX(); x <= max.getX(); x++) {
             for (int z = min.getZ(); z <= max.getZ(); z++) {
-                flipOne(world, new BlockPos(x, min.getY(), z), formed);
-                flipOne(world, new BlockPos(x, max.getY(), z), formed);
+                flipOne(world, new BlockPos(x, min.getY(), z), formed, front);
+                flipOne(world, new BlockPos(x, max.getY(), z), formed, front);
             }
         }
         for (int y = min.getY() + 1; y < max.getY(); y++) {
             for (int x = min.getX(); x <= max.getX(); x++) {
-                flipOne(world, new BlockPos(x, y, min.getZ()), formed);
-                flipOne(world, new BlockPos(x, y, max.getZ()), formed);
+                flipOne(world, new BlockPos(x, y, min.getZ()), formed, front);
+                flipOne(world, new BlockPos(x, y, max.getZ()), formed, front);
             }
             for (int z = min.getZ() + 1; z < max.getZ(); z++) {
-                flipOne(world, new BlockPos(min.getX(), y, z), formed);
-                flipOne(world, new BlockPos(max.getX(), y, z), formed);
+                flipOne(world, new BlockPos(min.getX(), y, z), formed, front);
+                flipOne(world, new BlockPos(max.getX(), y, z), formed, front);
             }
         }
     }
 
-    private static void flipOne(World world, BlockPos pos, boolean formed) {
+    private static void flipOne(World world, BlockPos pos, boolean formed, EnumFacing front) {
         IBlockState state = world.getBlockState(pos);
         if (state.getBlock() instanceof BlockSupremeFurnaceCasing) {
-            world.setBlockState(pos, state.withProperty(BlockSupremeFurnaceCasing.FORMED, formed), 3);
+            world.setBlockState(pos, state.withProperty(BlockSupremeFurnaceCasing.FORMED, formed)
+                    .withProperty(BlockSupremeFurnaceCasing.FRONT, front), 3);
         }
     }
 

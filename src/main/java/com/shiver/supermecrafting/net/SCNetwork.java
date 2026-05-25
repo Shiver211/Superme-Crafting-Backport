@@ -14,5 +14,6 @@ public final class SCNetwork {
     public static void init() {
         CHANNEL = NetworkRegistry.INSTANCE.newSimpleChannel(SupremeCrafting.MOD_ID);
         CHANNEL.registerMessage(PacketTransferRecipe.Handler.class, PacketTransferRecipe.class, 0, Side.SERVER);
+        CHANNEL.registerMessage(PacketMultiblockSync.Handler.class, PacketMultiblockSync.class, 1, Side.CLIENT);
     }
 }

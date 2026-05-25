@@ -1,10 +1,15 @@
 package com.shiver.supermecrafting.client;
 
 import com.shiver.supermecrafting.SupremeCrafting;
+import com.shiver.supermecrafting.block.BlockSupremeFurnaceCasing;
 import com.shiver.supermecrafting.registry.SCRegistry;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.Mod;
@@ -21,10 +26,10 @@ public final class ClientRegistry {
     @SubscribeEvent
     public static void models(ModelRegistryEvent event) {
         block(SCRegistry.SUPREME_TABLE);
-        block(SCRegistry.SUPREME_FURNACE_CASING);
-        block(SCRegistry.SUPREME_FURNACE_INPUT_HATCH);
-        block(SCRegistry.SUPREME_FURNACE_OUTPUT_HATCH);
-        block(SCRegistry.SUPREME_FURNACE_FUEL_HATCH);
+        furnaceBlock(SCRegistry.SUPREME_FURNACE_CASING);
+        furnaceBlock(SCRegistry.SUPREME_FURNACE_INPUT_HATCH);
+        furnaceBlock(SCRegistry.SUPREME_FURNACE_OUTPUT_HATCH);
+        furnaceBlock(SCRegistry.SUPREME_FURNACE_FUEL_HATCH);
         item(SCRegistry.SUPREME_WRENCH);
         item(SCRegistry.SUPREME_FURNACE_TERMINAL);
         item(SCRegistry.SUPREME_FURNACE_BOMB_T1);
@@ -42,8 +47,33 @@ public final class ClientRegistry {
         item(Item.getItemFromBlock(block));
     }
 
+    private static void furnaceBlock(Block block) {
+        block(block);
+    }
+
     private static void item(Item item) {
         ModelLoader.setCustomModelResourceLocation(item, 0,
                 new ModelResourceLocation(item.getRegistryName(), "inventory"));
+    }
+
+    @SubscribeEvent
+    public static void bake(ModelBakeEvent event) {
+        wrapFurnaceModels(event, SCRegistry.SUPREME_FURNACE_CASING);
+        wrapFurnaceModels(event, SCRegistry.SUPREME_FURNACE_INPUT_HATCH);
+        wrapFurnaceModels(event, SCRegistry.SUPREME_FURNACE_OUTPUT_HATCH);
+        wrapFurnaceModels(event, SCRegistry.SUPREME_FURNACE_FUEL_HATCH);
+    }
+
+    private static void wrapFurnaceModels(ModelBakeEvent event, Block block) {
+        ResourceLocation name = block.getRegistryName();
+        for (IBlockState state : block.getBlockState().getValidStates()) {
+            if (!state.getValue(BlockSupremeFurnaceCasing.FORMED)) continue;
+            String variant = "formed=true,front=" + state.getValue(BlockSupremeFurnaceCasing.FRONT).getName2();
+            ModelResourceLocation location = new ModelResourceLocation(name, variant);
+            IBakedModel model = event.getModelRegistry().getObject(location);
+            if (model != null) {
+                event.getModelRegistry().putObject(location, new FormedCasingModel(model));
+            }
+        }
     }
 }

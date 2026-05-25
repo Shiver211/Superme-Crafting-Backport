@@ -12,6 +12,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyBool;
+import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -19,10 +20,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.property.ExtendedBlockState;
+import net.minecraftforge.common.property.IExtendedBlockState;
 
 public class BlockSupremeFurnaceCasing extends Block {
     public static final PropertyBool FORMED = PropertyBool.create("formed");
+    public static final PropertyDirection FRONT = PropertyDirection.create("front", EnumFacing.Plane.HORIZONTAL);
+    public static final FurnaceRenderRegionProperty RENDER_REGION = new FurnaceRenderRegionProperty();
 
     public BlockSupremeFurnaceCasing(String name) {
         super(Material.ROCK);
@@ -32,22 +38,35 @@ public class BlockSupremeFurnaceCasing extends Block {
         setHardness(3.0F);
         setResistance(6.0F);
         setSoundType(SoundType.STONE);
-        setDefaultState(blockState.getBaseState().withProperty(FORMED, false));
+        setDefaultState(blockState.getBaseState().withProperty(FORMED, false).withProperty(FRONT, EnumFacing.NORTH));
     }
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, FORMED);
+        return new ExtendedBlockState(this, new net.minecraft.block.properties.IProperty[]{FORMED, FRONT},
+                new net.minecraftforge.common.property.IUnlistedProperty[]{RENDER_REGION});
     }
 
     @Override
     public int getMetaFromState(IBlockState state) {
-        return state.getValue(FORMED) ? 1 : 0;
+        int front = state.getValue(FRONT).getHorizontalIndex();
+        return (state.getValue(FORMED) ? 4 : 0) | front;
     }
 
     @Override
     public IBlockState getStateFromMeta(int meta) {
-        return getDefaultState().withProperty(FORMED, (meta & 1) != 0);
+        return getDefaultState()
+                .withProperty(FORMED, (meta & 4) != 0)
+                .withProperty(FRONT, EnumFacing.byHorizontalIndex(meta & 3));
+    }
+
+    @Override
+    public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
+        if (!state.getValue(FORMED) || !(state instanceof IExtendedBlockState)) {
+            return state;
+        }
+        return ((IExtendedBlockState) state).withProperty(RENDER_REGION,
+                SupremeCrafting.proxy.furnaceRenderRegion(world, pos, state.getValue(FRONT)));
     }
 
     @Override
