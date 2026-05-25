@@ -1,6 +1,7 @@
 package com.shiver.supermecrafting.net;
 
 import com.shiver.supermecrafting.table.ContainerSupremeTable;
+import com.shiver.supermecrafting.table.SupremeTableInventory;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -52,9 +53,17 @@ public class PacketTransferRecipe implements IMessage {
             if (!(player.openContainer instanceof ContainerSupremeTable)) return;
             ContainerSupremeTable container = (ContainerSupremeTable) player.openContainer;
             for (Map.Entry<Integer, String> entry : targets.entrySet()) {
+                int slot = entry.getKey();
+                if (slot < 0 || slot >= SupremeTableInventory.SIZE) {
+                    continue;
+                }
+                ItemStack existing = container.table().getStackInSlot(slot);
+                if (!existing.isEmpty()) {
+                    continue;
+                }
                 ItemStack found = takeOne(player, entry.getValue());
                 if (!found.isEmpty()) {
-                    container.table().setInventorySlotContents(entry.getKey(), found);
+                    container.table().setInventorySlotContents(slot, found);
                 }
             }
         }

@@ -2,13 +2,16 @@ package com.shiver.supermecrafting.client;
 
 import com.shiver.supermecrafting.table.ContainerSupremeTable;
 import com.shiver.supermecrafting.table.SupremeTableInventory;
+import com.shiver.supermecrafting.table.ViewportSlot;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 
@@ -19,6 +22,8 @@ public class GuiSupremeTable extends GuiContainer {
     private static final int PANEL_DARK = 0xFF555555;
     private static final int CANVAS_BG = 0xFF373737;
     private static final int GRID_BORDER = 0xFFA0A0A0;
+    private static final int SLOT_BRIGHTEN = 0x30FFFFFF;
+    private static final int HOVER_INSET = 1;
     private static final int CANVAS_PAD = 4;
     private static final int TITLE_HEIGHT = 17;
     private static final int CANVAS_HEIGHT = 220;
@@ -94,10 +99,10 @@ public class GuiSupremeTable extends GuiContainer {
     }
 
     private void updateSlotPositions() {
-        int firstX = Math.max(0, (int) Math.floor(-panOffsetX / cellSize));
-        int lastX = Math.min(SupremeTableInventory.WIDTH - 1, (int) Math.ceil((canvasWidth() - panOffsetX) / cellSize));
-        int firstY = Math.max(0, (int) Math.floor(-panOffsetY / cellSize));
-        int lastY = Math.min(SupremeTableInventory.HEIGHT - 1, (int) Math.ceil((canvasHeight() - panOffsetY) / cellSize));
+        int firstX = Math.max(0, (int) Math.ceil(-panOffsetX / cellSize));
+        int lastX = Math.min(SupremeTableInventory.WIDTH - 1, (int) Math.floor((canvasWidth() - panOffsetX) / cellSize) - 1);
+        int firstY = Math.max(0, (int) Math.ceil(-panOffsetY / cellSize));
+        int lastY = Math.min(SupremeTableInventory.HEIGHT - 1, (int) Math.floor((canvasHeight() - panOffsetY) / cellSize) - 1);
         for (int i = 0; i < SupremeTableInventory.SIZE; i++) {
             Slot slot = inventorySlots.inventorySlots.get(i);
             slot.xPos = OFFSCREEN;
@@ -131,7 +136,14 @@ public class GuiSupremeTable extends GuiContainer {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         updateSlotPositions();
-        super.drawScreen(mouseX, mouseY, partialTicks);
+        tableContainer.refreshCraftingResult();
+        ViewportSlot.setSuppressRender(true);
+        try {
+            super.drawScreen(mouseX, mouseY, partialTicks);
+        } finally {
+            ViewportSlot.setSuppressRender(false);
+        }
+        drawScaledGridContents(mouseX, mouseY);
         if (overArrow(mouseX, mouseY)) {
             drawHoveringText(java.util.Collections.singletonList("Show recipes for this table"), mouseX, mouseY);
         }
@@ -161,6 +173,7 @@ public class GuiSupremeTable extends GuiContainer {
     }
 
     private void renderGridChrome(int cl, int ct, int cr, int cb) {
+        enableScissor(cl, ct, cr, cb);
         GlStateManager.disableTexture2D();
         int left = guiLeft + gridLineX(0);
         int top = guiTop + gridLineY(0);
@@ -171,6 +184,40 @@ public class GuiSupremeTable extends GuiContainer {
         drawRect(left - 2, top, left, bottom, GRID_BORDER);
         drawRect(right, top, right + 2, bottom, GRID_BORDER);
         GlStateManager.enableTexture2D();
+        drawCanvasSlotSprites();
+        disableScissor();
+    }
+
+    private void drawCanvasSlotSprites() {
+        int firstX = Math.max(0, (int) Math.floor(-panOffsetX / cellSize));
+        int lastX = Math.min(SupremeTableInventory.WIDTH - 1, (int) Math.ceil((canvasWidth() - panOffsetX) / cellSize));
+        int firstY = Math.max(0, (int) Math.floor(-panOffsetY / cellSize));
+        int lastY = Math.min(SupremeTableInventory.HEIGHT - 1, (int) Math.ceil((canvasHeight() - panOffsetY) / cellSize));
+
+        mc.getTextureManager().bindTexture(SLOT_TEXTURE);
+        for (int y = firstY; y <= lastY; y++) {
+            int sy = guiTop + gridLineY(y);
+            int height = Math.max(1, cellHeight(y));
+            for (int x = firstX; x <= lastX; x++) {
+                int sx = guiLeft + gridLineX(x);
+                int width = Math.max(1, cellWidth(x));
+                drawScaledCustomSizeModalRect(sx, sy, 7, 17, 18, 18, width, height, 256, 256);
+                drawRect(sx + 1, sy + 1, sx + width - 1, sy + height - 1, SLOT_BRIGHTEN);
+            }
+        }
+    }
+
+    private void enableScissor(int left, int top, int right, int bottom) {
+        int x = left * mc.displayWidth / width;
+        int y = mc.displayHeight - bottom * mc.displayHeight / height;
+        int w = Math.max(0, (right - left) * mc.displayWidth / width);
+        int h = Math.max(0, (bottom - top) * mc.displayHeight / height);
+        GL11.glEnable(GL11.GL_SCISSOR_TEST);
+        GL11.glScissor(x, y, w, h);
+    }
+
+    private void disableScissor() {
+        GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
 
     private void drawSlotSprites() {
@@ -178,6 +225,7 @@ public class GuiSupremeTable extends GuiContainer {
         for (int i = SupremeTableInventory.SIZE; i < inventorySlots.inventorySlots.size(); i++) {
             Slot slot = inventorySlots.inventorySlots.get(i);
             drawTexturedModalRect(guiLeft + slot.xPos - 1, guiTop + slot.yPos - 1, 7, 17, 18, 18);
+            drawRect(guiLeft + slot.xPos, guiTop + slot.yPos, guiLeft + slot.xPos + 16, guiTop + slot.yPos + 16, SLOT_BRIGHTEN);
         }
     }
 
@@ -186,8 +234,85 @@ public class GuiSupremeTable extends GuiContainer {
         if (left == OFFSCREEN || top == OFFSCREEN) {
             return false;
         }
-        int slotIndex = getSlotUnderMouse() == null ? -1 : getSlotUnderMouse().slotNumber;
+        int gx = gridXFromSlotLeft(left);
+        int gy = gridYFromSlotTop(top);
+        if (gx >= 0 && gy >= 0 && gx < SupremeTableInventory.WIDTH && gy < SupremeTableInventory.HEIGHT
+                && gridLineX(gx) == left && gridLineY(gy) == top) {
+            int px = pointX - guiLeft;
+            int py = pointY - guiTop;
+            return inCanvas(pointX, pointY)
+                    && px >= left
+                    && px < left + cellWidth(gx)
+                    && py >= top
+                    && py < top + cellHeight(gy);
+        }
         return super.isPointInRegion(left, top, right, bottom, pointX, pointY);
+    }
+
+    private int gridXFromSlotLeft(int left) {
+        return (int) Math.round((left - CANVAS_PAD - panOffsetX) / cellSize);
+    }
+
+    private int gridYFromSlotTop(int top) {
+        return (int) Math.round((top - TITLE_HEIGHT - panOffsetY) / cellSize);
+    }
+
+    private Slot gridSlotAt(int mouseX, int mouseY) {
+        if (!inCanvas(mouseX, mouseY)) return null;
+        int relX = mouseX - guiLeft - CANVAS_PAD;
+        int relY = mouseY - guiTop - TITLE_HEIGHT;
+        int gx = (int) Math.floor((relX - panOffsetX) / cellSize);
+        int gy = (int) Math.floor((relY - panOffsetY) / cellSize);
+        if (gx < 0 || gy < 0 || gx >= SupremeTableInventory.WIDTH || gy >= SupremeTableInventory.HEIGHT) return null;
+        Slot slot = inventorySlots.inventorySlots.get(SupremeTableInventory.indexOf(gx, gy));
+        return slot.xPos == OFFSCREEN || slot.yPos == OFFSCREEN ? null : slot;
+    }
+
+    private void drawScaledGridContents(int mouseX, int mouseY) {
+        int cl = guiLeft + CANVAS_PAD;
+        int ct = guiTop + TITLE_HEIGHT;
+        int cr = cl + canvasWidth();
+        int cb = ct + canvasHeight();
+        enableScissor(cl, ct, cr, cb);
+        RenderHelper.enableGUIStandardItemLighting();
+        GlStateManager.enableDepth();
+        for (int i = 0; i < SupremeTableInventory.SIZE; i++) {
+            Slot slot = inventorySlots.inventorySlots.get(i);
+            if (slot.xPos == OFFSCREEN || slot.yPos == OFFSCREEN || !slot.getHasStack()) continue;
+            int gx = SupremeTableInventory.xOf(i);
+            int gy = SupremeTableInventory.yOf(i);
+            drawScaledStack(slot.getStack(), guiLeft + slot.xPos, guiTop + slot.yPos, cellWidth(gx), cellHeight(gy));
+        }
+        GlStateManager.disableLighting();
+        Slot hover = gridSlotAt(mouseX, mouseY);
+        if (hover != null) {
+            int gx = SupremeTableInventory.xOf(hover.slotNumber);
+            int gy = SupremeTableInventory.yOf(hover.slotNumber);
+            drawGradientRect(guiLeft + hover.xPos + HOVER_INSET, guiTop + hover.yPos + HOVER_INSET,
+                    guiLeft + hover.xPos + cellWidth(gx) - HOVER_INSET,
+                    guiTop + hover.yPos + cellHeight(gy) - HOVER_INSET,
+                    -2130706433, -2130706433);
+        }
+        disableScissor();
+        RenderHelper.disableStandardItemLighting();
+        if (mc.player.inventory.getItemStack().isEmpty() && hover != null && hover.getHasStack()) {
+            renderToolTip(hover.getStack(), mouseX, mouseY);
+        }
+    }
+
+    private void drawScaledStack(ItemStack stack, int x, int y, int cellW, int cellH) {
+        if (stack.isEmpty()) return;
+        float scale = Math.max(0.25F, Math.min(cellW, cellH) / 18.0F);
+        float drawX = x + (cellW - 16.0F * scale) / 2.0F;
+        float drawY = y + (cellH - 16.0F * scale) / 2.0F;
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(drawX, drawY, 100.0F);
+        GlStateManager.scale(scale, scale, 1.0F);
+        itemRender.zLevel = 100.0F;
+        itemRender.renderItemAndEffectIntoGUI(mc.player, stack, 0, 0);
+        itemRender.renderItemOverlayIntoGUI(fontRenderer, stack, 0, 0, null);
+        itemRender.zLevel = 0.0F;
+        GlStateManager.popMatrix();
     }
 
     @Override

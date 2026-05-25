@@ -32,9 +32,10 @@ public class SupremeJeiTransferHandler implements IRecipeTransferHandler<Contain
                 if (!ingredient.isInput()) continue;
                 ItemStack displayed = ingredient.getDisplayedIngredient();
                 if (displayed == null || displayed.isEmpty()) continue;
-                int index = entry.getKey();
-                int gridSlot = (index % 81) + (index / 81) * SupremeTableInventory.WIDTH;
-                targets.put(gridSlot, stackKey(displayed));
+                int slot = entry.getKey();
+                if (slot >= 0 && slot < SupremeTableInventory.SIZE) {
+                    targets.put(slot, stackKey(displayed));
+                }
             }
             SCNetwork.CHANNEL.sendToServer(new PacketTransferRecipe(targets));
         }

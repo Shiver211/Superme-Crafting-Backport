@@ -45,11 +45,15 @@ public class ContainerSupremeTable extends Container {
 
     @Override
     public void detectAndSendChanges() {
-        if (!table.getWorld().isRemote && lastVersion != table.modVersion()) {
+        refreshCraftingResult();
+        super.detectAndSendChanges();
+    }
+
+    public void refreshCraftingResult() {
+        if (lastVersion != table.modVersion()) {
             lastVersion = table.modVersion();
             result.setInventorySlotContents(0, SupremeCraftingMatcher.findResult(table.supremeInventory(), table.getWorld()));
         }
-        super.detectAndSendChanges();
     }
 
     @Override
