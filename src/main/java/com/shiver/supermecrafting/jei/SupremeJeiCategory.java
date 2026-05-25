@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.Ingredient;
 
@@ -22,6 +23,8 @@ import java.util.List;
 
 public class SupremeJeiCategory implements IRecipeCategory<SupremeRecipeWrapper> {
     private static final int GRID_SIZE = 144;
+    private static final int OUTPUT_X = 180;
+    private static final int OUTPUT_Y = 63;
 
     private final IDrawable icon;
     private final IDrawableStatic background;
@@ -41,13 +44,15 @@ public class SupremeJeiCategory implements IRecipeCategory<SupremeRecipeWrapper>
     public void setRecipe(IRecipeLayout recipeLayout, SupremeRecipeWrapper wrapper, IIngredients ingredients) {
         int width = Math.max(1, wrapper.recipe().getWidth());
         int height = Math.max(1, wrapper.recipe().getHeight());
-        int slotSize = Math.max(1, Math.min(GRID_SIZE / width, GRID_SIZE / height));
+        int cellWidth = Math.max(1, GRID_SIZE / width);
+        int cellHeight = Math.max(1, GRID_SIZE / height);
+        int slotSize = Math.max(1, Math.min(18, Math.min(cellWidth, cellHeight)));
         IIngredientRenderer<ItemStack> inputRenderer = new ScaledItemRenderer(slotSize);
         List<Ingredient> recipeInputs = wrapper.recipe().getSupremeIngredients();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                int sx = Math.round((float) GRID_SIZE * x / width);
-                int sy = Math.round((float) GRID_SIZE * y / height);
+                int sx = Math.round((float) GRID_SIZE * x / width + (cellWidth - slotSize) / 2.0F);
+                int sy = Math.round((float) GRID_SIZE * y / height + (cellHeight - slotSize) / 2.0F);
                 int slot = SupremeTableInventory.indexOf(x, y);
                 recipeLayout.getItemStacks().init(slot, true, inputRenderer, sx, sy, slotSize, slotSize, 0, 0);
                 int ingredientIndex = x + y * width;
@@ -56,7 +61,7 @@ public class SupremeJeiCategory implements IRecipeCategory<SupremeRecipeWrapper>
                 }
             }
         }
-        recipeLayout.getItemStacks().init(SupremeTableInventory.SIZE, false, 184, 63);
+        recipeLayout.getItemStacks().init(SupremeTableInventory.SIZE, false, OUTPUT_X, OUTPUT_Y);
         recipeLayout.getItemStacks().set(SupremeTableInventory.SIZE, wrapper.recipe().getRecipeOutput());
     }
 
@@ -95,6 +100,14 @@ public class SupremeJeiCategory implements IRecipeCategory<SupremeRecipeWrapper>
         @Override
         public FontRenderer getFontRenderer(Minecraft minecraft, ItemStack ingredient) {
             return minecraft.fontRenderer;
+        }
+
+        @Override
+        public List<String> getTooltip(Minecraft minecraft, ItemStack ingredient, ITooltipFlag tooltipFlag) {
+            if (ingredient == null || ingredient.isEmpty()) {
+                return java.util.Collections.emptyList();
+            }
+            return ingredient.getTooltip(minecraft.player, tooltipFlag);
         }
     }
 }

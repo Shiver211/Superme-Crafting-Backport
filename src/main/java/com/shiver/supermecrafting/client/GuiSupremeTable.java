@@ -14,6 +14,7 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
+import java.awt.Rectangle;
 
 public class GuiSupremeTable extends GuiContainer {
     private static final ResourceLocation SLOT_TEXTURE = new ResourceLocation("textures/gui/container/generic_54.png");
@@ -144,6 +145,8 @@ public class GuiSupremeTable extends GuiContainer {
             ViewportSlot.setSuppressRender(false);
         }
         drawScaledGridContents(mouseX, mouseY);
+        drawCanvasStackTooltip(mouseX, mouseY);
+        renderHoveredToolTip(mouseX, mouseY);
         if (overArrow(mouseX, mouseY)) {
             drawHoveringText(java.util.Collections.singletonList("Show recipes for this table"), mouseX, mouseY);
         }
@@ -268,6 +271,15 @@ public class GuiSupremeTable extends GuiContainer {
         return slot.xPos == OFFSCREEN || slot.yPos == OFFSCREEN ? null : slot;
     }
 
+    private Slot gridStackAt(int mouseX, int mouseY) {
+        Slot slot = gridSlotAt(mouseX, mouseY);
+        if (slot == null || !slot.getHasStack()) return null;
+        int gx = SupremeTableInventory.xOf(slot.slotNumber);
+        int gy = SupremeTableInventory.yOf(slot.slotNumber);
+        Rectangle bounds = stackBounds(guiLeft + slot.xPos, guiTop + slot.yPos, cellWidth(gx), cellHeight(gy));
+        return bounds.contains(mouseX, mouseY) ? slot : null;
+    }
+
     private void drawScaledGridContents(int mouseX, int mouseY) {
         int cl = guiLeft + CANVAS_PAD;
         int ct = guiTop + TITLE_HEIGHT;
@@ -284,35 +296,49 @@ public class GuiSupremeTable extends GuiContainer {
             drawScaledStack(slot.getStack(), guiLeft + slot.xPos, guiTop + slot.yPos, cellWidth(gx), cellHeight(gy));
         }
         GlStateManager.disableLighting();
-        Slot hover = gridSlotAt(mouseX, mouseY);
+        GlStateManager.disableDepth();
+        Slot hover = gridStackAt(mouseX, mouseY);
         if (hover != null) {
             int gx = SupremeTableInventory.xOf(hover.slotNumber);
             int gy = SupremeTableInventory.yOf(hover.slotNumber);
-            drawGradientRect(guiLeft + hover.xPos + HOVER_INSET, guiTop + hover.yPos + HOVER_INSET,
-                    guiLeft + hover.xPos + cellWidth(gx) - HOVER_INSET,
-                    guiTop + hover.yPos + cellHeight(gy) - HOVER_INSET,
-                    -2130706433, -2130706433);
+            Rectangle bounds = stackBounds(guiLeft + hover.xPos, guiTop + hover.yPos, cellWidth(gx), cellHeight(gy));
+            drawGradientRect(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height, -2130706433, -2130706433);
         }
         disableScissor();
         RenderHelper.disableStandardItemLighting();
-        if (mc.player.inventory.getItemStack().isEmpty() && hover != null && hover.getHasStack()) {
+    }
+
+    private void drawCanvasStackTooltip(int mouseX, int mouseY) {
+        Slot hover = gridStackAt(mouseX, mouseY);
+        if (mc.player.inventory.getItemStack().isEmpty() && hover != null) {
             renderToolTip(hover.getStack(), mouseX, mouseY);
         }
     }
 
     private void drawScaledStack(ItemStack stack, int x, int y, int cellW, int cellH) {
         if (stack.isEmpty()) return;
-        float scale = Math.max(0.25F, Math.min(cellW, cellH) / 18.0F);
-        float drawX = x + (cellW - 16.0F * scale) / 2.0F;
-        float drawY = y + (cellH - 16.0F * scale) / 2.0F;
+        float scale = stackScale(cellW, cellH);
+        Rectangle bounds = stackBounds(x, y, cellW, cellH);
         GlStateManager.pushMatrix();
-        GlStateManager.translate(drawX, drawY, 100.0F);
+        GlStateManager.translate(bounds.x, bounds.y, 100.0F);
         GlStateManager.scale(scale, scale, 1.0F);
         itemRender.zLevel = 100.0F;
         itemRender.renderItemAndEffectIntoGUI(mc.player, stack, 0, 0);
         itemRender.renderItemOverlayIntoGUI(fontRenderer, stack, 0, 0, null);
         itemRender.zLevel = 0.0F;
         GlStateManager.popMatrix();
+    }
+
+    private float stackScale(int cellW, int cellH) {
+        return Math.max(0.25F, Math.min(cellW, cellH) / 18.0F);
+    }
+
+    private Rectangle stackBounds(int x, int y, int cellW, int cellH) {
+        float scale = stackScale(cellW, cellH);
+        int size = Math.max(1, Math.round(16.0F * scale));
+        int drawX = Math.round(x + (cellW - size) / 2.0F);
+        int drawY = Math.round(y + (cellH - size) / 2.0F);
+        return new Rectangle(drawX, drawY, size, size);
     }
 
     @Override
