@@ -104,7 +104,7 @@ public final class FurnaceFormation {
     private static void flipOne(World world, BlockPos pos, boolean formed) {
         IBlockState state = world.getBlockState(pos);
         if (state.getBlock() instanceof BlockSupremeFurnaceCasing) {
-            world.setBlockState(pos, state.withProperty(BlockSupremeFurnaceCasing.FORMED, formed), 2);
+            world.setBlockState(pos, state.withProperty(BlockSupremeFurnaceCasing.FORMED, formed), 3);
         }
     }
 

@@ -10,6 +10,7 @@ import net.minecraft.client.gui.inventory.GuiFurnace;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ContainerFurnace;
+import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
@@ -43,6 +44,10 @@ public class GuiHandler implements IGuiHandler {
             if (te instanceof TileSupremeTable) {
                 return new GuiSupremeTable(new ContainerSupremeTable(player.inventory, (TileSupremeTable) te), player.inventory);
             }
+        }
+        if (id == GuiIds.SUPREME_FURNACE || id == GuiIds.SUPREME_TERMINAL) {
+            return new GuiFurnace(player.inventory,
+                    new InventoryBasic("container.supreme_crafting.supreme_furnace", false, Region.SLOT_COUNT));
         }
         Region region = regionFor(id, player, world, x, y, z);
         if (region != null) {
