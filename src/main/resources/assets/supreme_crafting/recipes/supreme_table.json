@@ -1,15 +1,20 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "pattern": [
-        "G",
-        "C"
-    ],
-    "key": {
-        "G": "minecraft:dirt",
-        "C": "minecraft:crafting_table"
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "G",
+    "C"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:dirt",
+      "data": 0
     },
-    "result": {
-        "item": "supreme_crafting:supreme_table",
-        "count": 1
+    "C": {
+      "item": "minecraft:crafting_table"
     }
+  },
+  "result": {
+    "item": "supreme_crafting:supreme_table",
+    "count": 1
+  }
 }

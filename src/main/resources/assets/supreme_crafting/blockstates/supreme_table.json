@@ -1,5 +1,7 @@
 {
   "variants": {
-    "normal": { "model": "supreme_crafting:supreme_table" }
+    "normal": {
+      "model": "supreme_crafting:supreme_table"
+    }
   }
 }

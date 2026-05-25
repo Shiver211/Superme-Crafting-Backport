@@ -1,18 +1,23 @@
 {
-    "type": "supreme_crafting:supreme_shaped",
-    "pattern": [
-        "GTG",
-        "TCT",
-        "GTG"
-    ],
-    "key": {
-        "G": { "item": "minecraft:gunpowder" },
-        "T": { "item": "minecraft:tnt" },
-        "C": { "item": "supreme_crafting:supreme_furnace_casing" }
+  "type": "supreme_crafting:supreme_shaped",
+  "pattern": [
+    "GTG",
+    "TFT",
+    "GTG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:gunpowder"
     },
-    "result": {
-        "item": "supreme_crafting:supreme_furnace_bomb_t1",
-        "count": 1
+    "T": {
+      "item": "minecraft:tnt"
     },
-    "group": "supreme_furnace"
+    "F": {
+      "item": "supreme_crafting:supreme_furnace_casing"
+    }
+  },
+  "result": {
+    "item": "supreme_crafting:supreme_furnace_bomb_t1",
+    "count": 1
+  }
 }

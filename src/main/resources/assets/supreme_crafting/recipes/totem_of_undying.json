@@ -1,25 +1,31 @@
 {
-    "type": "supreme_crafting:supreme_shaped",
-    "pattern": [
-        ".GGGGG.",
-        ".G.E.G.",
-        ".GGGGG.",
-        ".G...G.",
-        "GG...GG",
-        "G..T..G",
-        "GG...GG",
-        ".G...G.",
-        ".G...G.",
-        ".G...G.",
-        ".GGGGG."
-    ],
-    "key": {
-        "G": "minecraft:gold_block",
-        "E": "minecraft:emerald_block",
-        "T": "minecraft:nether_star"
+  "type": "supreme_crafting:supreme_shaped",
+  "pattern": [
+    ".GGGGG.",
+    ".G.E.G.",
+    ".GGGGG.",
+    ".G...G.",
+    "GG...GG",
+    "G..T..G",
+    "GG...GG",
+    ".G...G.",
+    ".G...G.",
+    ".G...G.",
+    ".GGGGG."
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:gold_block"
     },
-    "result": {
-        "item": "minecraft:totem_of_undying",
-        "count": 1
+    "E": {
+      "item": "minecraft:emerald_block"
+    },
+    "T": {
+      "item": "minecraft:nether_star"
     }
+  },
+  "result": {
+    "item": "minecraft:totem_of_undying",
+    "count": 1
+  }
 }

@@ -1,17 +1,23 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "pattern": [
-        "CCC",
-        "CFC",
-        "CHC"
-    ],
-    "key": {
-        "C": "minecraft:cobblestone",
-        "F": "minecraft:furnace",
-        "H": "minecraft:hopper"
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CCC",
+    "CFC",
+    "CHC"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:cobblestone"
     },
-    "result": {
-        "item": "supreme_crafting:supreme_furnace_output_hatch",
-        "count": 1
+    "F": {
+      "item": "minecraft:furnace"
+    },
+    "H": {
+      "item": "minecraft:hopper"
     }
+  },
+  "result": {
+    "item": "supreme_crafting:supreme_furnace_output_hatch",
+    "count": 1
+  }
 }

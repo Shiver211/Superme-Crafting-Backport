@@ -1,6 +1,6 @@
 {
-  "parent": "item/handheld",
+  "parent": "item/generated",
   "textures": {
-    "layer0": "items/ender_pearl"
+    "layer0": "supreme_crafting:items/supreme_furnace_terminal"
   }
 }

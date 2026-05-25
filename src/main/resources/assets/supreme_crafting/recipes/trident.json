@@ -1,39 +1,48 @@
 {
-    "type": "supreme_crafting:supreme_shaped",
-    "pattern": [
-        "TTT.TTT.TTT",
-        "TTT.TTT.TTT",
-        "TTT.TTT.TTT",
-        "BBBBBBBBBBB",
-        "BBBBBBBBBBB",
-        "....NNN....",
-        "....SSS....",
-        "....SSS....",
-        "....SSS....",
-        "....SSS....",
-        "....SSS....",
-        "....SSS....",
-        "....SSS....",
-        "....SSS....",
-        "....SSS....",
-        "....SSS....",
-        "....SSS....",
-        "....SSS....",
-        "....SSS....",
-        "....SSS....",
-        "....SSS....",
-        "....SSS....",
-        "....SSS....",
-        "....SSS...."
-    ],
-    "key": {
-        "T": "minecraft:iron_ingot",
-        "B": "minecraft:prismarine",
-        "N": "minecraft:emerald",
-        "S": "minecraft:iron_ingot"
+  "type": "supreme_crafting:supreme_shaped",
+  "pattern": [
+    "TTT.TTT.TTT",
+    "TTT.TTT.TTT",
+    "TTT.TTT.TTT",
+    "BBBBBBBBBBB",
+    "BBBBBBBBBBB",
+    "....NNN....",
+    "....SSS....",
+    "....SSS....",
+    "....SSS....",
+    "....SSS....",
+    "....SSS....",
+    "....SSS....",
+    "....SSS....",
+    "....SSS....",
+    "....SSS....",
+    "....SSS....",
+    "....SSS....",
+    "....SSS....",
+    "....SSS....",
+    "....SSS....",
+    "....SSS....",
+    "....SSS....",
+    "....SSS....",
+    "....SSS...."
+  ],
+  "key": {
+    "T": {
+      "item": "minecraft:iron_ingot"
     },
-    "result": {
-        "item": "minecraft:diamond_sword",
-        "count": 1
+    "B": {
+      "item": "minecraft:prismarine",
+      "data": 0
+    },
+    "N": {
+      "item": "minecraft:emerald"
+    },
+    "S": {
+      "item": "minecraft:iron_ingot"
     }
+  },
+  "result": {
+    "item": "minecraft:diamond_sword",
+    "count": 1
+  }
 }

@@ -1,24 +1,32 @@
 {
-    "type": "supreme_crafting:supreme_shaped",
-    "pattern": [
-        "NNNNNNNNN",
-        "N.......N",
-        "N.E...E.N",
-        "N..OOO..N",
-        "N..ODO..N",
-        "N..OOO..N",
-        "N.E...E.N",
-        "N.......N",
-        "NNNNNNNNN"
-    ],
-    "key": {
-        "N": "minecraft:diamond",
-        "E": "minecraft:ender_pearl",
-        "O": "minecraft:obsidian",
-        "D": "minecraft:dragon_egg"
+  "type": "supreme_crafting:supreme_shaped",
+  "pattern": [
+    "NNNNNNNNN",
+    "N.......N",
+    "N.E...E.N",
+    "N..OOO..N",
+    "N..ODO..N",
+    "N..OOO..N",
+    "N.E...E.N",
+    "N.......N",
+    "NNNNNNNNN"
+  ],
+  "key": {
+    "N": {
+      "item": "minecraft:diamond"
     },
-    "result": {
-        "item": "minecraft:dragon_egg",
-        "count": 2
+    "E": {
+      "item": "minecraft:ender_eye"
+    },
+    "O": {
+      "item": "minecraft:obsidian"
+    },
+    "D": {
+      "item": "minecraft:dragon_egg"
     }
+  },
+  "result": {
+    "item": "minecraft:dragon_egg",
+    "count": 2
+  }
 }

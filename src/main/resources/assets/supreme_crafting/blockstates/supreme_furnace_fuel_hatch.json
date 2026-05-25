@@ -1,6 +1,6 @@
 {
   "variants": {
-    "formed=false": { "model": "supreme_crafting:supreme_furnace_fuel_hatch" },
-    "formed=true":  { "model": "supreme_crafting:supreme_furnace_fuel_hatch_formed" }
+    "formed=false": { "model": "supreme_crafting:supreme_furnace_casing" },
+    "formed=true":  { "model": "supreme_crafting:supreme_furnace_casing" }
   }
 }

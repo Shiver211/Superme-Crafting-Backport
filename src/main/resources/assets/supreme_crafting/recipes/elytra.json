@@ -1,45 +1,49 @@
 {
-    "type": "supreme_crafting:supreme_shaped",
-    "pattern": [
-        "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "L                          LL                          L",
-        "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
-    ],
-    "key": {
-        "L": "#leather"
+  "type": "supreme_crafting:supreme_shaped",
+  "pattern": [
+    "                                ",
+    "                                ",
+    "                                ",
+    "                                ",
+    "        DDDDDDDDDDDDDDDD        ",
+    "        DDDDDDDDDDDDDDDD        ",
+    "    DDDDPPPPDDDDDDDDPPPPDDDD    ",
+    "    DDDDPPPPDDDDDDDDPPPPDDDD    ",
+    "  DDPPPPPPPPDD    DDPPPPPPPPDD  ",
+    "  DDPPPPPPPPDD    DDPPPPPPPPDD  ",
+    "  DDPPPPPPPPDD    DDPPPPPPPPDD  ",
+    "  DDPPPPPPPPDD    DDPPPPPPPPDD  ",
+    "  DDPPPPPPPPDD    DDPPPPPPPPDD  ",
+    "  DDPPPPPPPPDD    DDPPPPPPPPDD  ",
+    "  DDPPPPPPPPDD    DDPPPPPPPPDD  ",
+    "  DDPPPPPPPPDD    DDPPPPPPPPDD  ",
+    "  DDPPPPPPPPDD    DDPPPPPPPPDD  ",
+    "  DDPPPPPPPPDD    DDPPPPPPPPDD  ",
+    "  DDPPPPPPPPDD    DDPPPPPPDDDD  ",
+    "  DDPPPPPPPPDD    DDPPPPPPDDDD  ",
+    "    DDPPPPPPDD    DDPPPPPPDD    ",
+    "    DDPPPPPPDD    DDPPPPPPDD    ",
+    "    DDPPPPPPDD    DDPPPPPPDD    ",
+    "    DDPPPPPPDD    DDPPPPPPDD    ",
+    "      DDPPDD        DDPPDD      ",
+    "      DDPPDD        DDPPDD      ",
+    "      DDDD            DDDD      ",
+    "      DDDD            DDDD      ",
+    "                                ",
+    "                                ",
+    "                                ",
+    "                                "
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:leather"
     },
-    "result": {
-        "item": "minecraft:elytra",
-        "count": 1
-    },
-    "group": "supreme_items"
+    "D": {
+      "item": "minecraft:diamond"
+    }
+  },
+  "result": {
+    "item": "minecraft:elytra",
+    "count": 1
+  }
 }

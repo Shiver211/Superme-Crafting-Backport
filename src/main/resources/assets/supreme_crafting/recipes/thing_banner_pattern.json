@@ -1,0 +1,25 @@
+{
+  "type": "supreme_crafting:supreme_shaped",
+  "pattern": [
+    "RPR",
+    "PEP",
+    "RPR"
+  ],
+  "key": {
+    "R": {
+      "item": "minecraft:dye",
+      "data": 1
+    },
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "E": {
+      "item": "minecraft:ender_eye"
+    }
+  },
+  "result": {
+    "item": "minecraft:banner",
+    "count": 1,
+    "data": 0
+  }
+}

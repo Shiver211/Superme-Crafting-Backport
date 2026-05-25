@@ -1,79 +1,70 @@
 package com.shiver.supermecrafting.recipe;
 
-import net.minecraft.inventory.InventoryCrafting;
+import com.shiver.supermecrafting.table.SupremeTableInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 
-import javax.annotation.Nonnull;
-
-/**
- * Supreme Crafting shaped recipe for the 81x81 grid.
- * Extends IForgeRegistryEntry.Impl for registry compatibility.
- */
-public class SupremeShapedRecipe extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements SupremeCraftingRecipe {
-
-    private final SupremeShapedPattern pattern;
+public class SupremeShapedRecipe extends SupremeRecipe {
+    private final int width;
+    private final int height;
+    private final NonNullList<Ingredient> ingredients;
     private final ItemStack result;
-    private final String group;
 
-    public SupremeShapedRecipe(String group, SupremeShapedPattern pattern, ItemStack result) {
-        this.group = group;
-        this.pattern = pattern;
+    public SupremeShapedRecipe(int width, int height, NonNullList<Ingredient> ingredients, ItemStack result) {
+        super("supreme_shaped");
+        this.width = width;
+        this.height = height;
+        this.ingredients = ingredients;
         this.result = result;
     }
 
-    public SupremeShapedPattern getPattern() {
-        return pattern;
-    }
-
     @Override
-    public int getPatternWidth() {
-        return pattern.getWidth();
+    public boolean matches(SupremeTableInventory inventory, World world) {
+        SupremeCraftingMatcher.Bounds b = SupremeCraftingMatcher.bounds(inventory);
+        if (b == null || b.width() != width || b.height() != height) {
+            return false;
+        }
+        return matchesAt(inventory, b.minX, b.minY, false) || matchesAt(inventory, b.minX, b.minY, true);
     }
 
-    @Override
-    public int getPatternHeight() {
-        return pattern.getHeight();
+    private boolean matchesAt(SupremeTableInventory inventory, int startX, int startY, boolean mirror) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int ingredientX = mirror ? width - x - 1 : x;
+                Ingredient ingredient = ingredients.get(ingredientX + y * width);
+                ItemStack stack = inventory.get(SupremeTableInventory.indexOf(startX + x, startY + y));
+                if (!ingredient.apply(stack)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
-    @Override
-    public Ingredient getIngredientAt(int x, int y) {
-        return pattern.getIngredientAt(x, y);
-    }
-
-    @Override
-    public boolean matches(@Nonnull InventoryCrafting inv, @Nonnull World world) {
-        return pattern.matches(inv);
-    }
-
-    @Nonnull
-    @Override
-    public ItemStack getCraftingResult(@Nonnull InventoryCrafting inv) {
-        return result.copy();
-    }
-
-    @Nonnull
-    @Override
-    public ItemStack getRecipeOutput() {
-        return result.copy();
-    }
-
-    @Override
-    public boolean canFit(int width, int height) {
-        return width >= pattern.getWidth() && height >= pattern.getHeight();
-    }
-
-    @Nonnull
     @Override
     public NonNullList<Ingredient> getIngredients() {
-        return pattern.getIngredients();
+        return ingredients;
     }
 
     @Override
-    public String getGroup() {
-        return group;
+    public NonNullList<Ingredient> getSupremeIngredients() {
+        return ingredients;
+    }
+
+    @Override
+    public int getWidth() {
+        return width;
+    }
+
+    @Override
+    public int getHeight() {
+        return height;
+    }
+
+    @Override
+    public ItemStack getRecipeOutput() {
+        return result;
     }
 }

@@ -1,28 +1,33 @@
 {
-    "type": "supreme_crafting:supreme_shaped",
-    "pattern": [
-        ".......S.......",
-        "....SSSSSSS....",
-        "...SSSSSSSSS...",
-        "..SSSSSSSSSSS..",
-        ".SSSSSSSSSSSSS.",
-        ".SSSSSSSSSSSSS.",
-        ".SSSSSSSSSSSSS.",
-        "SSSSSSSHSSSSSSS",
-        ".SSSSSSSSSSSSS.",
-        ".SSSSSSSSSSSSS.",
-        ".SSSSSSSSSSSSS.",
-        "..SSSSSSSSSSS..",
-        "...SSSSSSSSS...",
-        "....SSSSSSS....",
-        ".......S......."
-    ],
-    "key": {
-        "S": "minecraft:prismarine",
-        "H": "minecraft:emerald"
+  "type": "supreme_crafting:supreme_shaped",
+  "pattern": [
+    ".......S.......",
+    "....SSSSSSS....",
+    "...SSSSSSSSS...",
+    "..SSSSSSSSSSS..",
+    ".SSSSSSSSSSSSS.",
+    ".SSSSSSSSSSSSS.",
+    ".SSSSSSSSSSSSS.",
+    "SSSSSSSHSSSSSSS",
+    ".SSSSSSSSSSSSS.",
+    ".SSSSSSSSSSSSS.",
+    ".SSSSSSSSSSSSS.",
+    "..SSSSSSSSSSS..",
+    "...SSSSSSSSS...",
+    "....SSSSSSS....",
+    ".......S......."
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:prismarine",
+      "data": 0
     },
-    "result": {
-        "item": "minecraft:heart_of_the_sea",
-        "count": 1
+    "H": {
+      "item": "minecraft:emerald"
     }
+  },
+  "result": {
+    "item": "minecraft:sea_lantern",
+    "count": 1
+  }
 }

@@ -1,16 +1,20 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "pattern": [
-        "CCC",
-        "CFC",
-        "CCC"
-    ],
-    "key": {
-        "C": "minecraft:cobblestone",
-        "F": "minecraft:furnace"
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CCC",
+    "CFC",
+    "CCC"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:cobblestone"
     },
-    "result": {
-        "item": "supreme_crafting:supreme_furnace_casing",
-        "count": 1
+    "F": {
+      "item": "minecraft:furnace"
     }
+  },
+  "result": {
+    "item": "supreme_crafting:supreme_furnace_casing",
+    "count": 1
+  }
 }

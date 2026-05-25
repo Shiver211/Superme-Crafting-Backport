@@ -1,23 +1,33 @@
 {
-    "type": "supreme_crafting:supreme_shaped",
-    "pattern": [
-        "IIIIIIIII",
-        "I       I",
-        "I SSSSS I",
-        "I SSSSS I",
-        "I SSSSS I",
-        "I SSSSS I",
-        "I SSSSS I",
-        "I       I",
-        "IIIIIIIII"
-    ],
-    "key": {
-        "I": "#blockIron",
-        "S": "#blockSoulSand"
+  "type": "supreme_crafting:supreme_shaped",
+  "pattern": [
+    "NNBBBBBNN",
+    "NN.....NN",
+    "B.......B",
+    "B..SSS..B",
+    "B..SWS..B",
+    "B..SSS..B",
+    "B.......B",
+    "NN.....NN",
+    "NNBBBBBNN"
+  ],
+  "key": {
+    "N": {
+      "item": "minecraft:diamond"
     },
-    "result": {
-        "item": "minecraft:mob_spawner",
-        "count": 1
+    "B": {
+      "item": "minecraft:iron_bars"
     },
-    "group": "supreme_blocks"
+    "S": {
+      "item": "minecraft:soul_sand"
+    },
+    "W": {
+      "item": "minecraft:skull",
+      "data": 1
+    }
+  },
+  "result": {
+    "item": "minecraft:mob_spawner",
+    "count": 1
+  }
 }

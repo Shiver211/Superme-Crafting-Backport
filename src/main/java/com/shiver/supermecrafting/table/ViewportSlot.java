@@ -4,19 +4,18 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
-/**
- * Slot subclass for the 81x81 Supreme Table grid.
- * Disables vanilla's hover highlight (the GUI draws its own at variable cell size).
- */
 public class ViewportSlot extends Slot {
-
-    public ViewportSlot(IInventory inventory, int index, int x, int y) {
-        super(inventory, index, x, y);
+    public ViewportSlot(IInventory inventoryIn, int index, int xPosition, int yPosition) {
+        super(inventoryIn, index, xPosition, yPosition);
     }
 
     @Override
-    public boolean isEnabled() {
-        // Always enabled; the GUI controls visibility by setting xPos/yPos
-        return true;
+    public boolean isHere(IInventory inv, int slotIn) {
+        return inv == inventory && slotIn == getSlotIndex();
+    }
+
+    @Override
+    public int getSlotStackLimit() {
+        return 64;
     }
 }

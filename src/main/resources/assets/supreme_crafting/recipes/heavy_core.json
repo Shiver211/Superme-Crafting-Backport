@@ -1,21 +1,32 @@
 {
-    "type": "supreme_crafting:supreme_shaped",
-    "pattern": [
-        "NIIIN",
-        "IAEAI",
-        "IEBEI",
-        "IAEAI",
-        "NIIIN"
-    ],
-    "key": {
-        "N": "minecraft:diamond",
-        "I": "minecraft:iron_block",
-        "A": "minecraft:anvil",
-        "E": "minecraft:emerald",
-        "B": "minecraft:blaze_rod"
+  "type": "supreme_crafting:supreme_shaped",
+  "pattern": [
+    "NIIIN",
+    "IAEAI",
+    "IEBEI",
+    "IAEAI",
+    "NIIIN"
+  ],
+  "key": {
+    "N": {
+      "item": "minecraft:diamond"
     },
-    "result": {
-        "item": "minecraft:diamond_block",
-        "count": 1
+    "I": {
+      "item": "minecraft:iron_block"
+    },
+    "A": {
+      "item": "minecraft:anvil",
+      "data": 0
+    },
+    "E": {
+      "item": "minecraft:emerald"
+    },
+    "B": {
+      "item": "minecraft:blaze_rod"
     }
+  },
+  "result": {
+    "item": "minecraft:diamond_block",
+    "count": 1
+  }
 }

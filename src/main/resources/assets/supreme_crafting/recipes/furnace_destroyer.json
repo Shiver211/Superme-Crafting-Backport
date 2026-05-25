@@ -1,19 +1,25 @@
 {
-    "type": "supreme_crafting:supreme_shaped",
-    "pattern": [
-        "CCCCC",
-        "CDDDC",
-        "  S  ",
-        "  S  ",
-        "  S  "
-    ],
-    "key": {
-        "C": "supreme_crafting:supreme_furnace_casing",
-        "D": "minecraft:diamond",
-        "S": "minecraft:stick"
+  "type": "supreme_crafting:supreme_shaped",
+  "pattern": [
+    "CCCCC",
+    "CDDDC",
+    "  S  ",
+    "  S  ",
+    "  S  "
+  ],
+  "key": {
+    "C": {
+      "item": "supreme_crafting:supreme_furnace_casing"
     },
-    "result": {
-        "item": "supreme_crafting:furnace_destroyer",
-        "count": 1
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "S": {
+      "item": "minecraft:stick"
     }
+  },
+  "result": {
+    "item": "supreme_crafting:furnace_destroyer",
+    "count": 1
+  }
 }

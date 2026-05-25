@@ -1,18 +1,23 @@
 {
-    "type": "supreme_crafting:supreme_shaped",
-    "pattern": [
-        "BNB",
-        "NCN",
-        "BNB"
-    ],
-    "key": {
-        "B": { "item": "supreme_crafting:supreme_furnace_bomb_t2" },
-        "N": { "item": "minecraft:nether_star" },
-        "C": { "item": "supreme_crafting:supreme_furnace_casing" }
+  "type": "supreme_crafting:supreme_shaped",
+  "pattern": [
+    "BNB",
+    "NFN",
+    "BNB"
+  ],
+  "key": {
+    "B": {
+      "item": "supreme_crafting:supreme_furnace_bomb_t2"
     },
-    "result": {
-        "item": "supreme_crafting:supreme_furnace_bomb_t3",
-        "count": 1
+    "N": {
+      "item": "minecraft:nether_star"
     },
-    "group": "supreme_furnace"
+    "F": {
+      "item": "supreme_crafting:supreme_furnace_casing"
+    }
+  },
+  "result": {
+    "item": "supreme_crafting:supreme_furnace_bomb_t3",
+    "count": 1
+  }
 }

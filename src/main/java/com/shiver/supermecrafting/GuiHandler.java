@@ -1,68 +1,66 @@
 package com.shiver.supermecrafting;
 
+import com.shiver.supermecrafting.client.GuiSupremeTable;
 import com.shiver.supermecrafting.furnace.MultiblockRegions;
 import com.shiver.supermecrafting.furnace.Region;
-import com.shiver.supermecrafting.furnace.RegionFurnaceContainer;
-import com.shiver.supermecrafting.table.SupremeTableContainer;
-import com.shiver.supermecrafting.table.SupremeTableTileEntity;
+import com.shiver.supermecrafting.furnace.RegionFurnaceInventory;
+import com.shiver.supermecrafting.table.ContainerSupremeTable;
+import com.shiver.supermecrafting.table.TileSupremeTable;
+import net.minecraft.client.gui.inventory.GuiFurnace;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ContainerFurnace;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 
-import javax.annotation.Nullable;
+import java.util.UUID;
 
 public class GuiHandler implements IGuiHandler {
+    public static final String TERMINAL_MOST = "SupremeCraftingTerminalMost";
+    public static final String TERMINAL_LEAST = "SupremeCraftingTerminalLeast";
 
-    public static final int SUPREME_TABLE = 0;
-    public static final int SUPREME_FURNACE = 1;
-
-    @Nullable
     @Override
     public Object getServerGuiElement(int id, EntityPlayer player, World world, int x, int y, int z) {
-        BlockPos pos = new BlockPos(x, y, z);
-        TileEntity te = world.getTileEntity(pos);
-        switch (id) {
-            case SUPREME_TABLE:
-                if (te instanceof SupremeTableTileEntity) {
-                    return new SupremeTableContainer(player.inventory, (SupremeTableTileEntity) te);
-                }
-                return null;
-            case SUPREME_FURNACE:
-                if (!world.isRemote && world instanceof WorldServer) {
-                    Region r = MultiblockRegions.get((WorldServer) world).findContaining(pos);
-                    if (r != null) {
-                        RegionFurnaceContainer furnaceInv = new RegionFurnaceContainer((WorldServer) world, r.getId());
-                        return new ContainerFurnace(player.inventory, furnaceInv);
-                    }
-                }
-                return null;
-            default:
-                return null;
+        if (id == GuiIds.SUPREME_TABLE) {
+            TileEntity te = world.getTileEntity(new net.minecraft.util.math.BlockPos(x, y, z));
+            if (te instanceof TileSupremeTable) {
+                return new ContainerSupremeTable(player.inventory, (TileSupremeTable) te);
+            }
         }
+        Region region = regionFor(id, player, world, x, y, z);
+        if (region != null) {
+            return new ContainerFurnace(player.inventory, new RegionFurnaceInventory(world, region.getId()));
+        }
+        return null;
     }
 
-    @Nullable
     @Override
     public Object getClientGuiElement(int id, EntityPlayer player, World world, int x, int y, int z) {
-        BlockPos pos = new BlockPos(x, y, z);
-        TileEntity te = world.getTileEntity(pos);
-        switch (id) {
-            case SUPREME_TABLE:
-                if (te instanceof SupremeTableTileEntity) {
-                    return new com.shiver.supermecrafting.client.SupremeTableGui(
-                            new SupremeTableContainer(player.inventory, (SupremeTableTileEntity) te));
-                }
-                return null;
-            case SUPREME_FURNACE:
-                // Client side: fields are synced via ContainerFurnace's field sync
-                return new net.minecraft.client.gui.inventory.GuiFurnace(
-                        player.inventory, new com.shiver.supermecrafting.client.ClientFurnaceData());
-            default:
-                return null;
+        if (id == GuiIds.SUPREME_TABLE) {
+            TileEntity te = world.getTileEntity(new net.minecraft.util.math.BlockPos(x, y, z));
+            if (te instanceof TileSupremeTable) {
+                return new GuiSupremeTable(new ContainerSupremeTable(player.inventory, (TileSupremeTable) te), player.inventory);
+            }
         }
+        Region region = regionFor(id, player, world, x, y, z);
+        if (region != null) {
+            return new GuiFurnace(player.inventory, new RegionFurnaceInventory(world, region.getId()));
+        }
+        return null;
+    }
+
+    private static Region regionFor(int id, EntityPlayer player, World world, int x, int y, int z) {
+        if (id == GuiIds.SUPREME_FURNACE) {
+            return MultiblockRegions.get(world).findContaining(new net.minecraft.util.math.BlockPos(x, y, z));
+        }
+        if (id == GuiIds.SUPREME_TERMINAL) {
+            NBTTagCompound data = player.getEntityData();
+            if (data.hasKey(TERMINAL_MOST) && data.hasKey(TERMINAL_LEAST)) {
+                return MultiblockRegions.get(world).byId(new UUID(data.getLong(TERMINAL_MOST), data.getLong(TERMINAL_LEAST)));
+            }
+        }
+        return null;
     }
 }
