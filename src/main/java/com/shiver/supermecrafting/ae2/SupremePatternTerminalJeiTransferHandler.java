@@ -1,8 +1,8 @@
-package com.shiver.supermecrafting.jei;
+package com.shiver.supermecrafting.ae2;
 
+import com.shiver.supermecrafting.jei.SupremeJeiTransferSupport;
 import com.shiver.supermecrafting.net.PacketTransferRecipe;
 import com.shiver.supermecrafting.net.SCNetwork;
-import com.shiver.supermecrafting.table.ContainerSupremeTable;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import net.minecraft.entity.player.EntityPlayer;
@@ -10,23 +10,23 @@ import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nullable;
 
-public class SupremeJeiTransferHandler implements IRecipeTransferHandler<ContainerSupremeTable> {
+public class SupremePatternTerminalJeiTransferHandler implements IRecipeTransferHandler<ContainerSupremePatternTerminal> {
     @Override
-    public Class<ContainerSupremeTable> getContainerClass() {
-        return ContainerSupremeTable.class;
+    public Class<ContainerSupremePatternTerminal> getContainerClass() {
+        return ContainerSupremePatternTerminal.class;
     }
 
     @Override
     @Nullable
-    public IRecipeTransferError transferRecipe(ContainerSupremeTable container, mezz.jei.api.gui.IRecipeLayout recipeLayout,
+    public IRecipeTransferError transferRecipe(ContainerSupremePatternTerminal container,
+                                               mezz.jei.api.gui.IRecipeLayout recipeLayout,
                                                EntityPlayer player, boolean maxTransfer, boolean doTransfer) {
         if (doTransfer) {
             ResourceLocation recipeId = SupremeJeiTransferSupport.findRecipeId(recipeLayout);
             if (recipeId != null) {
-                SCNetwork.CHANNEL.sendToServer(new PacketTransferRecipe(recipeId, maxTransfer));
+                SCNetwork.CHANNEL.sendToServer(new PacketTransferRecipe(recipeId, false));
             }
         }
         return null;
     }
-
 }

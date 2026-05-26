@@ -1,6 +1,7 @@
 package com.shiver.supermecrafting.jei;
 
 import com.shiver.supermecrafting.SupremeCrafting;
+import com.shiver.supermecrafting.ae2.AE2OptionalBridge;
 import com.shiver.supermecrafting.client.RecipeViewerHooks;
 import com.shiver.supermecrafting.recipe.SupremeRecipe;
 import com.shiver.supermecrafting.registry.SCRegistry;
@@ -16,6 +17,7 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.lang.reflect.Method;
 
 @JEIPlugin
 public class SupremeJeiPlugin implements IModPlugin {
@@ -42,10 +44,24 @@ public class SupremeJeiPlugin implements IModPlugin {
         registry.addRecipes(wrappers, UID);
         registry.addRecipeCatalyst(new ItemStack(SCRegistry.SUPREME_TABLE), UID);
         registry.getRecipeTransferRegistry().addRecipeTransferHandler(new SupremeJeiTransferHandler(), UID);
+        registerAe2(registry);
     }
 
     @Override
     public void onRuntimeAvailable(IJeiRuntime jeiRuntime) {
         runtime = jeiRuntime;
+    }
+
+    private static void registerAe2(IModRegistry registry) {
+        if (!AE2OptionalBridge.loaded()) {
+            return;
+        }
+        try {
+            Class<?> bridge = Class.forName("com.shiver.supermecrafting.ae2.AE2JeiBridge");
+            Method method = bridge.getMethod("register", IModRegistry.class, String.class);
+            method.invoke(null, registry, UID);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Failed to register AE2 JEI integration", e);
+        }
     }
 }

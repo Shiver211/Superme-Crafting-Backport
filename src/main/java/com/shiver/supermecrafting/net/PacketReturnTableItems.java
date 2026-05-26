@@ -1,6 +1,6 @@
 package com.shiver.supermecrafting.net;
 
-import com.shiver.supermecrafting.ae2.SupremeTableAe2Bridge;
+import com.shiver.supermecrafting.ae2.AE2OptionalBridge;
 import com.shiver.supermecrafting.table.ContainerSupremeTable;
 import com.shiver.supermecrafting.table.SupremeTableInventory;
 import com.shiver.supermecrafting.table.TileSupremeTable;
@@ -12,7 +12,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -21,7 +20,6 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 
 public class PacketReturnTableItems implements IMessage {
-    private static final String AE2_MOD_ID = "appliedenergistics2";
     private static final EnumFacing[] STORAGE_FACES = {
             EnumFacing.UP, EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.WEST, EnumFacing.EAST
     };
@@ -63,10 +61,10 @@ public class PacketReturnTableItems implements IMessage {
         }
 
         private static ItemStack insertIntoAe(EntityPlayerMP player, TileSupremeTable table, ItemStack stack) {
-            if (stack.isEmpty() || !Loader.isModLoaded(AE2_MOD_ID)) {
+            if (stack.isEmpty() || !AE2OptionalBridge.loaded()) {
                 return stack;
             }
-            return SupremeTableAe2Bridge.insert(player, table, stack);
+            return AE2OptionalBridge.insert(player, table, stack);
         }
 
         private static ItemStack insertIntoAdjacentContainers(TileSupremeTable table, ItemStack stack) {

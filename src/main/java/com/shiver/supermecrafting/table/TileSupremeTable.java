@@ -5,7 +5,7 @@ import appeng.api.networking.IGridNode;
 import appeng.api.networking.security.IActionHost;
 import appeng.api.util.AECableType;
 import appeng.api.util.AEPartLocation;
-import com.shiver.supermecrafting.ae2.SupremeTableAe2Bridge;
+import com.shiver.supermecrafting.ae2.AE2OptionalBridge;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
@@ -158,9 +158,7 @@ public class TileSupremeTable extends TileEntity implements IInventory, IGridHos
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         super.writeToNBT(compound);
         compound.setTag("Items", inventory.save());
-        if (isAe2Loaded()) {
-            SupremeTableAe2Bridge.writeNode(this, compound);
-        }
+        AE2OptionalBridge.writeNode(this, compound);
         return compound;
     }
 
@@ -168,9 +166,7 @@ public class TileSupremeTable extends TileEntity implements IInventory, IGridHos
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
         inventory.load(compound.getTagList("Items", 10));
-        if (isAe2Loaded()) {
-            SupremeTableAe2Bridge.readNode(this, compound);
-        }
+        AE2OptionalBridge.readNode(this, compound);
     }
 
     public void dropContents(World world, BlockPos pos) {
@@ -188,37 +184,33 @@ public class TileSupremeTable extends TileEntity implements IInventory, IGridHos
     @Override
     public void validate() {
         super.validate();
-        if (isAe2Loaded() && world != null && !world.isRemote) {
-            SupremeTableAe2Bridge.updateNode(this);
+        if (world != null && !world.isRemote) {
+            AE2OptionalBridge.updateNode(this);
         }
     }
 
     @Override
     public void invalidate() {
-        if (isAe2Loaded()) {
-            SupremeTableAe2Bridge.destroyNode(this);
-        }
+        AE2OptionalBridge.destroyNode(this);
         super.invalidate();
     }
 
     @Override
     public void onChunkUnload() {
-        if (isAe2Loaded()) {
-            SupremeTableAe2Bridge.destroyNode(this);
-        }
+        AE2OptionalBridge.destroyNode(this);
         super.onChunkUnload();
     }
 
     @Override
     @Optional.Method(modid = AE2_MOD_ID)
     public IGridNode getGridNode(AEPartLocation dir) {
-        return SupremeTableAe2Bridge.getGridNode(this);
+        return (IGridNode) AE2OptionalBridge.getGridNode(this);
     }
 
     @Override
     @Optional.Method(modid = AE2_MOD_ID)
     public AECableType getCableConnectionType(AEPartLocation dir) {
-        return SupremeTableAe2Bridge.getCableConnectionType(dir);
+        return (AECableType) AE2OptionalBridge.getCableConnectionType(dir);
     }
 
     @Override
@@ -232,10 +224,8 @@ public class TileSupremeTable extends TileEntity implements IInventory, IGridHos
     @Override
     @Optional.Method(modid = AE2_MOD_ID)
     public IGridNode getActionableNode() {
-        return SupremeTableAe2Bridge.getActionableNode(this);
+        return (IGridNode) AE2OptionalBridge.getActionableNode(this);
     }
 
-    private static boolean isAe2Loaded() {
-        return Loader.isModLoaded(AE2_MOD_ID);
-    }
+    private static boolean isAe2Loaded() { return Loader.isModLoaded(AE2_MOD_ID); }
 }

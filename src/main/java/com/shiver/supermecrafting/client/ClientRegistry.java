@@ -1,6 +1,7 @@
 package com.shiver.supermecrafting.client;
 
 import com.shiver.supermecrafting.SupremeCrafting;
+import com.shiver.supermecrafting.ae2.AE2OptionalBridge;
 import com.shiver.supermecrafting.block.BlockSupremeFurnaceCasing;
 import com.shiver.supermecrafting.registry.SCRegistry;
 import net.minecraft.block.Block;
@@ -14,6 +15,8 @@ import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+
+import java.lang.reflect.Method;
 
 @Mod.EventBusSubscriber(modid = SupremeCrafting.MOD_ID)
 public final class ClientRegistry {
@@ -41,6 +44,14 @@ public final class ClientRegistry {
         item(SCRegistry.SUPREME_WOODEN_AXE);
         item(SCRegistry.SUPREME_WOODEN_SHOVEL);
         item(SCRegistry.SUPREME_WOODEN_HOE);
+        ae2Models();
+    }
+
+    public static void registerAe2Models(Block terminal, Block iface, Block assembler, Item pattern) {
+        block(terminal);
+        block(iface);
+        block(assembler);
+        item(pattern);
     }
 
     private static void block(Block block) {
@@ -54,6 +65,19 @@ public final class ClientRegistry {
     private static void item(Item item) {
         ModelLoader.setCustomModelResourceLocation(item, 0,
                 new ModelResourceLocation(item.getRegistryName(), "inventory"));
+    }
+
+    private static void ae2Models() {
+        if (!AE2OptionalBridge.loaded()) {
+            return;
+        }
+        try {
+            Class<?> bridge = Class.forName("com.shiver.supermecrafting.ae2.AE2RegistryBridge");
+            Method method = bridge.getMethod("registerModels");
+            method.invoke(null);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Failed to register AE2 models", e);
+        }
     }
 
     @SubscribeEvent

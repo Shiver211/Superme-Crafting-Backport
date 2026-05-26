@@ -1,6 +1,7 @@
 package com.shiver.supermecrafting.registry;
 
 import com.shiver.supermecrafting.SupremeCrafting;
+import com.shiver.supermecrafting.ae2.AE2OptionalBridge;
 import com.shiver.supermecrafting.block.BlockSupremeFurnaceCasing;
 import com.shiver.supermecrafting.block.BlockSupremeFurnaceHatch;
 import com.shiver.supermecrafting.block.BlockSupremeTable;
@@ -24,6 +25,8 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+
+import java.lang.reflect.Method;
 
 @Mod.EventBusSubscriber(modid = SupremeCrafting.MOD_ID)
 public final class SCRegistry {
@@ -55,6 +58,7 @@ public final class SCRegistry {
     public static void blocks(RegistryEvent.Register<Block> event) {
         event.getRegistry().registerAll(SUPREME_TABLE, SUPREME_FURNACE_CASING,
                 SUPREME_FURNACE_INPUT_HATCH, SUPREME_FURNACE_OUTPUT_HATCH, SUPREME_FURNACE_FUEL_HATCH);
+        ae2("registerBlocks", new Class<?>[] { RegistryEvent.Register.class }, event);
     }
 
     @SubscribeEvent
@@ -69,11 +73,26 @@ public final class SCRegistry {
                 SUPREME_FURNACE_BOMB_T2, SUPREME_FURNACE_BOMB_T3, FURNACE_DESTROYER,
                 SUPREME_WOODEN_SWORD, SUPREME_WOODEN_PICKAXE, SUPREME_WOODEN_AXE,
                 SUPREME_WOODEN_SHOVEL, SUPREME_WOODEN_HOE);
+        ae2("registerItems", new Class<?>[] { RegistryEvent.Register.class }, event);
     }
 
     public static void registerTileEntities() {
         GameRegistry.registerTileEntity(TileSupremeTable.class, SupremeCrafting.MOD_ID + ":supreme_table");
         GameRegistry.registerTileEntity(TileFurnaceHatch.class, SupremeCrafting.MOD_ID + ":supreme_furnace_hatch");
+        ae2("registerTileEntities", new Class<?>[0]);
+    }
+
+    private static void ae2(String methodName, Class<?>[] types, Object... args) {
+        if (!AE2OptionalBridge.loaded()) {
+            return;
+        }
+        try {
+            Class<?> bridge = Class.forName("com.shiver.supermecrafting.ae2.AE2RegistryBridge");
+            Method method = bridge.getMethod(methodName, types);
+            method.invoke(null, args);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Failed to call AE2 registry bridge " + methodName, e);
+        }
     }
 
     private static Item blockItem(Block block) {

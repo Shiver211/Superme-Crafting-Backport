@@ -1,6 +1,7 @@
 package com.shiver.supermecrafting;
 
 import com.shiver.supermecrafting.client.GuiSupremeTable;
+import com.shiver.supermecrafting.ae2.AE2OptionalBridge;
 import com.shiver.supermecrafting.furnace.MultiblockRegions;
 import com.shiver.supermecrafting.furnace.Region;
 import com.shiver.supermecrafting.furnace.RegionFurnaceInventory;
@@ -16,6 +17,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 
+import java.lang.reflect.Method;
 import java.util.UUID;
 
 public class GuiHandler implements IGuiHandler {
@@ -29,6 +31,12 @@ public class GuiHandler implements IGuiHandler {
             if (te instanceof TileSupremeTable) {
                 return new ContainerSupremeTable(player.inventory, (TileSupremeTable) te);
             }
+        }
+        if (id == GuiIds.SUPREME_PATTERN_TERMINAL) {
+            return ae2Gui("serverPatternTerminal", player, world, x, y, z);
+        }
+        if (id == GuiIds.SUPREME_INTERFACE) {
+            return ae2Gui("serverInterface", player, world, x, y, z);
         }
         Region region = regionFor(id, player, world, x, y, z);
         if (region != null) {
@@ -44,6 +52,12 @@ public class GuiHandler implements IGuiHandler {
             if (te instanceof TileSupremeTable) {
                 return new GuiSupremeTable(new ContainerSupremeTable(player.inventory, (TileSupremeTable) te), player.inventory);
             }
+        }
+        if (id == GuiIds.SUPREME_PATTERN_TERMINAL) {
+            return ae2Gui("clientPatternTerminal", player, world, x, y, z);
+        }
+        if (id == GuiIds.SUPREME_INTERFACE) {
+            return ae2Gui("clientInterface", player, world, x, y, z);
         }
         if (id == GuiIds.SUPREME_FURNACE || id == GuiIds.SUPREME_TERMINAL) {
             return new GuiFurnace(player.inventory,
@@ -67,5 +81,19 @@ public class GuiHandler implements IGuiHandler {
             }
         }
         return null;
+    }
+
+    private static Object ae2Gui(String methodName, EntityPlayer player, World world, int x, int y, int z) {
+        if (!AE2OptionalBridge.loaded()) {
+            return null;
+        }
+        try {
+            Class<?> bridge = Class.forName("com.shiver.supermecrafting.ae2.AE2GuiBridge");
+            Method method = bridge.getMethod(methodName, EntityPlayer.class, World.class,
+                    int.class, int.class, int.class);
+            return method.invoke(null, player, world, x, y, z);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Failed to open AE2 GUI " + methodName, e);
+        }
     }
 }

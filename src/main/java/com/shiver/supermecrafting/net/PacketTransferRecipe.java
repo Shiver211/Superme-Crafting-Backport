@@ -1,6 +1,6 @@
 package com.shiver.supermecrafting.net;
 
-import com.shiver.supermecrafting.ae2.SupremeTableAe2Bridge;
+import com.shiver.supermecrafting.ae2.AE2OptionalBridge;
 import com.shiver.supermecrafting.recipe.SupremeRecipe;
 import com.shiver.supermecrafting.table.ContainerSupremeTable;
 import com.shiver.supermecrafting.table.SupremeTableInventory;
@@ -20,7 +20,6 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -28,13 +27,13 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.oredict.OreDictionary;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
 public class PacketTransferRecipe implements IMessage {
-    private static final String AE2_MOD_ID = "appliedenergistics2";
     private static final EnumFacing[] STORAGE_FACES = {
             EnumFacing.UP, EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.WEST, EnumFacing.EAST
     };
@@ -72,6 +71,9 @@ public class PacketTransferRecipe implements IMessage {
         }
 
         private static void transfer(EntityPlayerMP player, ResourceLocation recipeId, boolean maxTransfer) {
+            if (AE2OptionalBridge.loaded() && transferToPatternTerminal(player, recipeId)) {
+                return;
+            }
             if (!(player.openContainer instanceof ContainerSupremeTable)) return;
             Map<Integer, List<ItemStack>> targets = targets(recipeId);
             if (targets.isEmpty()) return;
@@ -97,6 +99,17 @@ public class PacketTransferRecipe implements IMessage {
                 }
             }
             container.detectAndSendChanges();
+        }
+
+        private static boolean transferToPatternTerminal(EntityPlayerMP player, ResourceLocation recipeId) {
+            try {
+                Class<?> bridge = Class.forName("com.shiver.supermecrafting.ae2.AE2PatternTerminalTransferBridge");
+                Method method = bridge.getMethod("transfer", EntityPlayerMP.class, ResourceLocation.class);
+                Object result = method.invoke(null, player, recipeId);
+                return result instanceof Boolean && (Boolean) result;
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException("Failed to transfer recipe to AE2 pattern terminal", e);
+            }
         }
 
         private static Map<Integer, List<ItemStack>> targets(ResourceLocation recipeId) {
@@ -209,8 +222,8 @@ public class PacketTransferRecipe implements IMessage {
                 }
             }
             TileSupremeTable table = supremeTable(player, tablePos);
-            if (table != null && isAe2Loaded()) {
-                SupremeTableAe2Bridge.addAvailable(table, stacks);
+            if (table != null && AE2OptionalBridge.loaded()) {
+                AE2OptionalBridge.addAvailable(table, stacks);
             }
             return stacks;
         }
@@ -268,8 +281,8 @@ public class PacketTransferRecipe implements IMessage {
                 }
             }
             TileSupremeTable table = supremeTable(player, tablePos);
-            if (table != null && isAe2Loaded()) {
-                return SupremeTableAe2Bridge.takeOne(player, table, candidates, stackToFill);
+            if (table != null && AE2OptionalBridge.loaded()) {
+                return AE2OptionalBridge.takeOne(player, table, candidates, stackToFill);
             }
             return ItemStack.EMPTY;
         }
@@ -372,8 +385,5 @@ public class PacketTransferRecipe implements IMessage {
             return tile instanceof TileSupremeTable ? (TileSupremeTable) tile : null;
         }
 
-        private static boolean isAe2Loaded() {
-            return Loader.isModLoaded(AE2_MOD_ID);
-        }
     }
 }
