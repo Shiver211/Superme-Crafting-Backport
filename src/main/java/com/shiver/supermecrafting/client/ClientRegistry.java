@@ -12,6 +12,7 @@ import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -86,6 +87,15 @@ public final class ClientRegistry {
         wrapFurnaceModels(event, SCRegistry.SUPREME_FURNACE_INPUT_HATCH);
         wrapFurnaceModels(event, SCRegistry.SUPREME_FURNACE_OUTPUT_HATCH);
         wrapFurnaceModels(event, SCRegistry.SUPREME_FURNACE_FUEL_HATCH);
+    }
+
+    @SubscribeEvent
+    public static void textures(TextureStitchEvent.Pre event) {
+        event.getMap().registerSprite(new ResourceLocation(SupremeCrafting.MOD_ID, "blocks/furnace_top"));
+        event.getMap().registerSprite(new ResourceLocation(SupremeCrafting.MOD_ID, "blocks/furnace_side"));
+        event.getMap().registerSprite(new ResourceLocation(SupremeCrafting.MOD_ID, "blocks/furnace_front_off"));
+        event.getMap().registerSprite(new ResourceLocation(SupremeCrafting.MOD_ID, "blocks/furnace_front_on"));
+        event.getMap().registerSprite(new ResourceLocation(SupremeCrafting.MOD_ID, "blocks/coal_block"));
     }
 
     private static void wrapFurnaceModels(ModelBakeEvent event, Block block) {

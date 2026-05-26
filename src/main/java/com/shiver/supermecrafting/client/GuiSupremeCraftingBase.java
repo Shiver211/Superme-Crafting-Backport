@@ -18,7 +18,8 @@ import java.awt.Rectangle;
 import java.io.IOException;
 
 public abstract class GuiSupremeCraftingBase extends GuiContainer {
-    private static final ResourceLocation SLOT_TEXTURE = new ResourceLocation("textures/gui/container/generic_54.png");
+    private static final ResourceLocation SLOT_TEXTURE =
+            new ResourceLocation("supreme_crafting", "textures/gui/container/generic_54.png");
     private static final int PANEL_BG = 0xFFC6C6C6;
     private static final int PANEL_LIGHT = 0xFFFFFFFF;
     private static final int PANEL_DARK = 0xFF555555;

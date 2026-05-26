@@ -1,7 +1,7 @@
 {
   "parent": "item/handheld",
   "textures": {
-    "layer0": "minecraft:items/wood_sword"
+    "layer0": "supreme_crafting:items/wood_sword"
   },
   "display": {
     "thirdperson_righthand": {

@@ -37,11 +37,11 @@ public class FormedCasingModel implements IBakedModel {
 
     public FormedCasingModel(IBakedModel fallback) {
         this.fallback = fallback;
-        this.top = sprite("minecraft:blocks/furnace_top");
-        this.side = sprite("minecraft:blocks/furnace_side");
-        this.front = sprite("minecraft:blocks/furnace_front_off");
-        this.frontOn = sprite("minecraft:blocks/furnace_front_on");
-        this.interior = sprite("minecraft:blocks/coal_block");
+        this.top = sprite("supreme_crafting:blocks/furnace_top");
+        this.side = sprite("supreme_crafting:blocks/furnace_side");
+        this.front = sprite("supreme_crafting:blocks/furnace_front_off");
+        this.frontOn = sprite("supreme_crafting:blocks/furnace_front_on");
+        this.interior = sprite("supreme_crafting:blocks/coal_block");
     }
 
     @Override
