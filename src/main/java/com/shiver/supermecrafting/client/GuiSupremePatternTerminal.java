@@ -19,6 +19,8 @@ import java.lang.reflect.Method;
 
 public class GuiSupremePatternTerminal extends GuiContainer {
     private static final ResourceLocation SLOT_TEXTURE = new ResourceLocation("textures/gui/container/generic_54.png");
+    private static final ResourceLocation STATES_TEXTURE =
+            new ResourceLocation("supreme_crafting", "textures/gui/states.png");
     private static final int PANEL_BG = 0xFFC6C6C6;
     private static final int PANEL_LIGHT = 0xFFFFFFFF;
     private static final int PANEL_DARK = 0xFF555555;
@@ -47,6 +49,7 @@ public class GuiSupremePatternTerminal extends GuiContainer {
     private static final int GROUP_BUTTON_ID = 100;
     private static final int MOVE_BUTTON_ID = 200;
 
+    private final ContainerSupremePatternTerminal patternContainer;
     private double panOffsetX;
     private double panOffsetY;
     private double cellSize = DEFAULT_CELL;
@@ -56,6 +59,7 @@ public class GuiSupremePatternTerminal extends GuiContainer {
 
     public GuiSupremePatternTerminal(ContainerSupremePatternTerminal container) {
         super(container);
+        this.patternContainer = container;
         this.xSize = 356;
         this.ySize = TITLE_HEIGHT + CANVAS_HEIGHT + PLAYER_INV_GAP + 3 * 18 + HOTBAR_GAP + 18 + 6;
         this.allowUserInput = true;
@@ -68,7 +72,7 @@ public class GuiSupremePatternTerminal extends GuiContainer {
                 canvasWidth(), cellSize, SupremeTableInventory.WIDTH, EDGE_PAD);
         panOffsetY = CanvasMath.clampPan(canvasHeight() / 2.0 - SupremeTableInventory.HEIGHT * cellSize / 2.0,
                 canvasHeight(), cellSize, SupremeTableInventory.HEIGHT, EDGE_PAD);
-        buttonList.add(new GuiButton(ENCODE_BUTTON_ID, guiLeft + 320, guiTop + 96, 30, 20, "=>"));
+        buttonList.add(new GuiButton(ENCODE_BUTTON_ID, guiLeft + 320, guiTop + 188, 30, 20, "->"));
         initNavigationButtons();
     }
 
@@ -100,6 +104,12 @@ public class GuiSupremePatternTerminal extends GuiContainer {
         int cl = guiLeft + CANVAS_PAD;
         int ct = guiTop + TITLE_HEIGHT;
         return mouseX >= cl && mouseX < cl + canvasWidth() && mouseY >= ct && mouseY < ct + canvasHeight();
+    }
+
+    private boolean overArrow(int mouseX, int mouseY) {
+        int ax = guiLeft + xSize - 22;
+        int ay = guiTop + 4;
+        return mouseX >= ax && mouseX < ax + 16 && mouseY >= ay && mouseY < ay + 16;
     }
 
     private void updateSlotPositions() {
@@ -140,6 +150,7 @@ public class GuiSupremePatternTerminal extends GuiContainer {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         updateSlotPositions();
+        patternContainer.refreshCraftingResult();
         ViewportSlot.setSuppressRender(true);
         try {
             super.drawScreen(mouseX, mouseY, partialTicks);
@@ -149,6 +160,9 @@ public class GuiSupremePatternTerminal extends GuiContainer {
         drawScaledGridContents(mouseX, mouseY);
         drawCanvasStackTooltip(mouseX, mouseY);
         renderHoveredToolTip(mouseX, mouseY);
+        if (overArrow(mouseX, mouseY)) {
+            drawHoveringText(java.util.Collections.singletonList("Show recipes for this table"), mouseX, mouseY);
+        }
     }
 
     @Override
@@ -164,6 +178,11 @@ public class GuiSupremePatternTerminal extends GuiContainer {
         int cr = cl + canvasWidth();
         int cb = ct + canvasHeight();
         drawRect(cl, ct, cr, cb, CANVAS_BG);
+
+        int ax = guiLeft + xSize - 22;
+        int ay = guiTop + 4;
+        drawRect(ax, ay, ax + 16, ay + 16, overArrow(mouseX, mouseY) ? 0xFFFFD040 : 0xFF8B8B8B);
+        fontRenderer.drawString("?", ax + 6, ay + 4, 0xFFFFFF);
 
         renderGridChrome(cl, ct, cr, cb);
         drawSlotSprites();
@@ -210,6 +229,13 @@ public class GuiSupremePatternTerminal extends GuiContainer {
             drawTexturedModalRect(guiLeft + slot.xPos - 1, guiTop + slot.yPos - 1, 7, 17, 18, 18);
             drawRect(guiLeft + slot.xPos, guiTop + slot.yPos, guiLeft + slot.xPos + 16, guiTop + slot.yPos + 16, SLOT_BRIGHTEN);
         }
+        drawBlankPatternSlotState();
+    }
+
+    private void drawBlankPatternSlotState() {
+        Slot slot = inventorySlots.inventorySlots.get(ContainerSupremePatternTerminal.BLANK_SLOT_INDEX);
+        mc.getTextureManager().bindTexture(STATES_TEXTURE);
+        drawTexturedModalRect(guiLeft + slot.xPos, guiTop + slot.yPos, 0, 0, 16, 16);
     }
 
     private Rectangle groupButtonBounds(int index) {
@@ -437,6 +463,10 @@ public class GuiSupremePatternTerminal extends GuiContainer {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        if (mouseButton == 0 && overArrow(mouseX, mouseY)) {
+            RecipeViewerHooks.invokeFirst();
+            return;
+        }
         if (mouseButton == 2 && inCanvas(mouseX, mouseY)) {
             panning = true;
             dragLastX = mouseX;
