@@ -4,6 +4,8 @@ import com.shiver.supermecrafting.ae2.SupremePatternData;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
@@ -48,6 +50,12 @@ public class ItemSupremePattern extends Item {
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
         if (SupremePatternData.isEncoded(stack)) {
+            boolean valid = worldIn == null || SupremePatternData.isRecipeValid(stack, worldIn);
+            if (!valid) {
+                stack.setStackDisplayName(TextFormatting.RED + I18n.translateToLocal("item.supreme_crafting.supreme_pattern.invalid.name"));
+            } else if (stack.hasDisplayName()) {
+                stack.removeSubCompound("display");
+            }
             tooltip.add(SupremePatternData.readRecipeName(stack));
             ItemStack output = SupremePatternData.readOutput(stack);
             if (!output.isEmpty()) {

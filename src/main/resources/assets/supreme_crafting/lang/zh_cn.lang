@@ -9,6 +9,7 @@ tile.supreme_crafting.supreme_interface.name=至尊接口
 tile.supreme_crafting.supreme_assembler.name=至尊分子装配室
 item.supreme_crafting.supreme_pattern.name=空白至尊样板
 item.supreme_crafting.supreme_pattern.encoded.name=编码至尊样板
+item.supreme_crafting.supreme_pattern.invalid.name=无效至尊样板
 item.supreme_crafting.supreme_wrench.name=至尊扳手
 item.supreme_crafting.supreme_furnace_terminal.name=至尊熔炉终端
 item.supreme_crafting.supreme_furnace_bomb_t1.name=至尊熔炉炸弹 (32³)

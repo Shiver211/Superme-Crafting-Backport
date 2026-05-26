@@ -5,11 +5,13 @@ import com.shiver.supermecrafting.recipe.SupremeRecipe;
 import com.shiver.supermecrafting.table.SupremeTableInventory;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.items.ItemHandlerHelper;
 
 import java.util.ArrayList;
@@ -98,6 +100,24 @@ public final class SupremePatternData {
         return pattern.getTagCompound().getCompoundTag(TAG_ENCODED).getString(TAG_RECIPE_NAME);
     }
 
+    public static boolean isRecipeValid(ItemStack pattern, net.minecraft.world.World world) {
+        if (!isEncoded(pattern)) {
+            return false;
+        }
+        NBTTagCompound data = pattern.getTagCompound().getCompoundTag(TAG_ENCODED);
+        String recipeId = data.getString(TAG_RECIPE_ID);
+        if (recipeId.isEmpty()) {
+            return false;
+        }
+        IRecipe recipe;
+        try {
+            recipe = ForgeRegistries.RECIPES.getValue(new ResourceLocation(recipeId));
+        } catch (RuntimeException e) {
+            return false;
+        }
+        return recipe != null && sameOutput(readOutput(pattern), recipe.getRecipeOutput()) && sameInputs(readInputs(pattern), recipe);
+    }
+
     public static ItemStack encodeCurrent(ItemStack pattern, SupremeTableInventory inventory, net.minecraft.world.World world) {
         IRecipe recipe = SupremeCraftingMatcher.findRecipe(inventory, world);
         return recipe == null ? ItemStack.EMPTY : encode(pattern, inventory, recipe);
@@ -127,6 +147,52 @@ public final class SupremePatternData {
         }
         InventoryCrafting crafting = SupremeCraftingMatcher.craftingInventory(inventory);
         return crafting == null ? recipe.getRecipeOutput().copy() : recipe.getCraftingResult(crafting);
+    }
+
+    private static boolean sameOutput(ItemStack stored, ItemStack current) {
+        return !stored.isEmpty()
+                && !current.isEmpty()
+                && stored.getCount() == current.getCount()
+                && ItemHandlerHelper.canItemStacksStack(stored, current);
+    }
+
+    private static boolean sameInputs(List<ItemStack> storedInputs, IRecipe recipe) {
+        List<Ingredient> ingredients = recipeIngredients(recipe);
+        int storedCount = 0;
+        for (ItemStack stack : storedInputs) {
+            storedCount += stack.getCount();
+        }
+        if (storedCount != ingredients.size()) {
+            return false;
+        }
+
+        boolean[] used = new boolean[ingredients.size()];
+        for (ItemStack stored : storedInputs) {
+            int matched = 0;
+            for (int i = 0; i < ingredients.size() && matched < stored.getCount(); i++) {
+                if (!used[i] && ingredients.get(i).apply(stored)) {
+                    used[i] = true;
+                    matched++;
+                }
+            }
+            if (matched != stored.getCount()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static List<Ingredient> recipeIngredients(IRecipe recipe) {
+        NonNullList<Ingredient> source = recipe instanceof SupremeRecipe
+                ? ((SupremeRecipe) recipe).getSupremeIngredients()
+                : recipe.getIngredients();
+        List<Ingredient> ingredients = new ArrayList<>();
+        for (Ingredient ingredient : source) {
+            if (ingredient != null && ingredient != Ingredient.EMPTY) {
+                ingredients.add(ingredient);
+            }
+        }
+        return ingredients;
     }
 
     private static List<ItemStack> extraOutputs(IRecipe recipe, SupremeTableInventory inventory) {

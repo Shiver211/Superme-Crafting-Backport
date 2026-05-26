@@ -59,8 +59,8 @@ public class TileSupremeInterface extends TileEntity implements IInventory, IGri
             return;
         }
         for (ItemStack pattern : patterns) {
-            if (SupremePatternData.isEncoded(pattern)) {
-                craftingTracker.addCraftingOption(this, new SupremeCraftingPatternDetails(pattern));
+            if (SupremePatternData.isRecipeValid(pattern, world)) {
+                craftingTracker.addCraftingOption(this, new SupremeCraftingPatternDetails(pattern, world));
             }
         }
     }

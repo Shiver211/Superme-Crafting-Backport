@@ -1,6 +1,6 @@
 {
   "parent": "item/handheld",
   "textures": {
-    "layer0": "supreme_crafting:items/diamond_pickaxe"
+    "layer0": "supreme_crafting:items/furnace_breaker"
   }
 }

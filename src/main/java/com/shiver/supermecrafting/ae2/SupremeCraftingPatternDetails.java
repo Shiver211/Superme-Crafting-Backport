@@ -8,6 +8,7 @@ import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SupremeCraftingPatternDetails implements ICraftingPatternDetails {
@@ -17,7 +18,7 @@ public class SupremeCraftingPatternDetails implements ICraftingPatternDetails {
     private final IAEItemStack[] outputs;
     private int priority;
 
-    public SupremeCraftingPatternDetails(ItemStack pattern) {
+    public SupremeCraftingPatternDetails(ItemStack pattern, World world) {
         this.pattern = pattern.copy();
         List<ItemStack> inputStacks = SupremePatternData.readInputs(pattern);
         this.inputs = new IAEItemStack[inputStacks.size()];
@@ -28,12 +29,7 @@ public class SupremeCraftingPatternDetails implements ICraftingPatternDetails {
             this.inputs[i] = stack;
             this.condensedInputs[i] = stack == null ? null : stack.copy();
         }
-        List<ItemStack> outputStacks = SupremePatternData.readOutputs(pattern);
-        this.outputs = new IAEItemStack[outputStacks.size()];
-        for (int i = 0; i < outputStacks.size(); i++) {
-            this.outputs[i] = AEApi.instance().storage()
-                    .getStorageChannel(IItemStorageChannel.class).createStack(outputStacks.get(i));
-        }
+        this.outputs = aeStacks(validOutputs(pattern, world));
     }
 
     @Override public ItemStack getPattern() { return pattern.copy(); }
@@ -44,9 +40,36 @@ public class SupremeCraftingPatternDetails implements ICraftingPatternDetails {
     @Override public IAEItemStack[] getCondensedOutputs() { return copy(outputs); }
     @Override public IAEItemStack[] getOutputs() { return copy(outputs); }
     @Override public boolean canSubstitute() { return false; }
-    @Override public ItemStack getOutput(InventoryCrafting craftingInv, World world) { return SupremePatternData.readOutput(pattern); }
+    @Override public ItemStack getOutput(InventoryCrafting craftingInv, World world) {
+        return SupremePatternData.isRecipeValid(pattern, world) ? SupremePatternData.readOutput(pattern) : ItemStack.EMPTY;
+    }
     @Override public int getPriority() { return priority; }
     @Override public void setPriority(int priority) { this.priority = priority; }
+
+    private static List<ItemStack> validOutputs(ItemStack pattern, World world) {
+        List<ItemStack> outputs = new ArrayList<>();
+        if (!SupremePatternData.isRecipeValid(pattern, world)) {
+            return outputs;
+        }
+        for (ItemStack stack : SupremePatternData.readOutputs(pattern)) {
+            if (!stack.isEmpty()) {
+                outputs.add(stack);
+            }
+        }
+        return outputs;
+    }
+
+    private static IAEItemStack[] aeStacks(List<ItemStack> itemStacks) {
+        List<IAEItemStack> stacks = new ArrayList<>();
+        for (ItemStack itemStack : itemStacks) {
+            IAEItemStack stack = AEApi.instance().storage()
+                    .getStorageChannel(IItemStorageChannel.class).createStack(itemStack);
+            if (stack != null) {
+                stacks.add(stack);
+            }
+        }
+        return stacks.toArray(new IAEItemStack[stacks.size()]);
+    }
 
     private static IAEItemStack[] copy(IAEItemStack[] stacks) {
         IAEItemStack[] out = new IAEItemStack[stacks.length];

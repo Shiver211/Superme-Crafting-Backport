@@ -1,6 +1,6 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "supreme_crafting:blocks/furnace_side"
+    "all": "supreme_crafting:blocks/furnace_casing"
   }
 }

@@ -9,6 +9,7 @@ tile.supreme_crafting.supreme_interface.name=Supreme Interface
 tile.supreme_crafting.supreme_assembler.name=Supreme Assembler
 item.supreme_crafting.supreme_pattern.name=Blank Supreme Pattern
 item.supreme_crafting.supreme_pattern.encoded.name=Encoded Supreme Pattern
+item.supreme_crafting.supreme_pattern.invalid.name=Invalid Supreme Pattern
 item.supreme_crafting.supreme_wrench.name=Supreme Wrench
 item.supreme_crafting.supreme_furnace_terminal.name=Supreme Furnace Terminal
 item.supreme_crafting.supreme_furnace_bomb_t1.name=Supreme Furnace Bomb (32³)

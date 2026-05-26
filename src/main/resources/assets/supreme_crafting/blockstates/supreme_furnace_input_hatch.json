@@ -1,12 +1,12 @@
 {
   "variants": {
-    "formed=false,front=north": { "model": "supreme_crafting:supreme_furnace_casing" },
-    "formed=false,front=south": { "model": "supreme_crafting:supreme_furnace_casing" },
-    "formed=false,front=west": { "model": "supreme_crafting:supreme_furnace_casing" },
-    "formed=false,front=east": { "model": "supreme_crafting:supreme_furnace_casing" },
-    "formed=true,front=north": { "model": "supreme_crafting:supreme_furnace_casing_formed" },
-    "formed=true,front=south": { "model": "supreme_crafting:supreme_furnace_casing_formed" },
-    "formed=true,front=west": { "model": "supreme_crafting:supreme_furnace_casing_formed" },
-    "formed=true,front=east": { "model": "supreme_crafting:supreme_furnace_casing_formed" }
+    "formed=false,front=north": { "model": "supreme_crafting:supreme_furnace_input_hatch" },
+    "formed=false,front=south": { "model": "supreme_crafting:supreme_furnace_input_hatch" },
+    "formed=false,front=west": { "model": "supreme_crafting:supreme_furnace_input_hatch" },
+    "formed=false,front=east": { "model": "supreme_crafting:supreme_furnace_input_hatch" },
+    "formed=true,front=north": { "model": "supreme_crafting:supreme_furnace_input_hatch" },
+    "formed=true,front=south": { "model": "supreme_crafting:supreme_furnace_input_hatch" },
+    "formed=true,front=west": { "model": "supreme_crafting:supreme_furnace_input_hatch" },
+    "formed=true,front=east": { "model": "supreme_crafting:supreme_furnace_input_hatch" }
   }
 }
