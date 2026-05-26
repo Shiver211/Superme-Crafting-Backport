@@ -45,5 +45,3 @@ supreme_crafting.message.script_export.mkdir_failed=Failed to create the scripts
 supreme_crafting.message.script_export.write_failed=Failed to write the Supreme Crafting script.
 supreme_crafting.message.script_export.success=Exported Supreme Crafting recipe to %s
 jei.supreme_crafting.materials=Materials
-supreme_crafting.book.name=Supreme Crafting Guide
-supreme_crafting.book.landing_text=Welcome. This guide covers the oversized crafting devices and the unexpected ways they reuse vanilla mechanics. Browse the categories on the left to get started.
