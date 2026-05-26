@@ -40,11 +40,6 @@ public final class ClientRegistry {
         item(SCRegistry.SUPREME_FURNACE_BOMB_T2);
         item(SCRegistry.SUPREME_FURNACE_BOMB_T3);
         item(SCRegistry.FURNACE_DESTROYER);
-        item(SCRegistry.SUPREME_WOODEN_SWORD);
-        item(SCRegistry.SUPREME_WOODEN_PICKAXE);
-        item(SCRegistry.SUPREME_WOODEN_AXE);
-        item(SCRegistry.SUPREME_WOODEN_SHOVEL);
-        item(SCRegistry.SUPREME_WOODEN_HOE);
         ae2Models();
     }
 

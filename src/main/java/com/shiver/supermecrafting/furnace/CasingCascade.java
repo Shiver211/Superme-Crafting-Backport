@@ -1,6 +1,10 @@
 package com.shiver.supermecrafting.furnace;
 
 import com.shiver.supermecrafting.block.BlockSupremeFurnaceCasing;
+import com.shiver.supermecrafting.registry.SCRegistry;
+import net.minecraft.inventory.InventoryHelper;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -31,8 +35,29 @@ public final class CasingCascade {
                 }
             }
         }
+        dropBomb(world, start, seen.size());
         for (BlockPos pos : seen) {
             world.setBlockToAir(pos);
         }
+    }
+
+    private static void dropBomb(World world, BlockPos pos, int blocks) {
+        Item bomb = bombFor(blocks);
+        if (bomb != null) {
+            InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(bomb));
+        }
+    }
+
+    private static Item bombFor(int blocks) {
+        if (blocks == FurnaceFormation.shellCount(32)) {
+            return SCRegistry.SUPREME_FURNACE_BOMB_T1;
+        }
+        if (blocks == FurnaceFormation.shellCount(64)) {
+            return SCRegistry.SUPREME_FURNACE_BOMB_T2;
+        }
+        if (blocks == FurnaceFormation.shellCount(128)) {
+            return SCRegistry.SUPREME_FURNACE_BOMB_T3;
+        }
+        return null;
     }
 }

@@ -11,16 +11,10 @@ import com.shiver.supermecrafting.item.ItemFurnaceDestroyer;
 import com.shiver.supermecrafting.item.ItemSupremeFurnaceBomb;
 import com.shiver.supermecrafting.item.ItemSupremeFurnaceTerminal;
 import com.shiver.supermecrafting.item.ItemSupremeWrench;
-import com.shiver.supermecrafting.item.SupremeToolMaterial;
 import com.shiver.supermecrafting.table.TileSupremeTable;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemAxe;
-import net.minecraft.item.ItemHoe;
-import net.minecraft.item.ItemPickaxe;
-import net.minecraft.item.ItemSpade;
-import net.minecraft.item.ItemSword;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -45,11 +39,6 @@ public final class SCRegistry {
     public static final Item SUPREME_FURNACE_BOMB_T2 = named(new ItemSupremeFurnaceBomb(64), "supreme_furnace_bomb_t2");
     public static final Item SUPREME_FURNACE_BOMB_T3 = named(new ItemSupremeFurnaceBomb(128), "supreme_furnace_bomb_t3");
     public static final Item FURNACE_DESTROYER = named(new ItemFurnaceDestroyer(), "furnace_destroyer");
-    public static final Item SUPREME_WOODEN_SWORD = named(new ItemSword(SupremeToolMaterial.INSTANCE), "supreme_wooden_sword");
-    public static final Item SUPREME_WOODEN_PICKAXE = named(new ItemPickaxe(SupremeToolMaterial.INSTANCE) {}, "supreme_wooden_pickaxe");
-    public static final Item SUPREME_WOODEN_AXE = named(new ItemAxe(SupremeToolMaterial.INSTANCE, 6.0F, -3.2F) {}, "supreme_wooden_axe");
-    public static final Item SUPREME_WOODEN_SHOVEL = named(new ItemSpade(SupremeToolMaterial.INSTANCE), "supreme_wooden_shovel");
-    public static final Item SUPREME_WOODEN_HOE = named(new ItemHoe(SupremeToolMaterial.INSTANCE), "supreme_wooden_hoe");
 
     private SCRegistry() {
     }
@@ -70,9 +59,7 @@ public final class SCRegistry {
                 blockItem(SUPREME_FURNACE_OUTPUT_HATCH),
                 blockItem(SUPREME_FURNACE_FUEL_HATCH),
                 SUPREME_WRENCH, SUPREME_FURNACE_TERMINAL, SUPREME_FURNACE_BOMB_T1,
-                SUPREME_FURNACE_BOMB_T2, SUPREME_FURNACE_BOMB_T3, FURNACE_DESTROYER,
-                SUPREME_WOODEN_SWORD, SUPREME_WOODEN_PICKAXE, SUPREME_WOODEN_AXE,
-                SUPREME_WOODEN_SHOVEL, SUPREME_WOODEN_HOE);
+                SUPREME_FURNACE_BOMB_T2, SUPREME_FURNACE_BOMB_T3, FURNACE_DESTROYER);
         ae2("registerItems", new Class<?>[] { RegistryEvent.Register.class }, event);
     }
 
