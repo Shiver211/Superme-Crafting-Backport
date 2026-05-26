@@ -28,7 +28,7 @@ public class SupremeJeiCategory implements IRecipeCategory<SupremeRecipeWrapper>
     public static final int WIDTH = 202;
     public static final int HEIGHT = 214;
     public static final int MATERIAL_X = 8;
-    public static final int MATERIAL_Y = 154;
+    public static final int MATERIAL_Y = 160;
     public static final int MATERIAL_W = 186;
     public static final int MATERIAL_H = 52;
 
@@ -50,15 +50,15 @@ public class SupremeJeiCategory implements IRecipeCategory<SupremeRecipeWrapper>
     public void setRecipe(IRecipeLayout recipeLayout, SupremeRecipeWrapper wrapper, IIngredients ingredients) {
         int width = Math.max(1, wrapper.recipe().getWidth());
         int height = Math.max(1, wrapper.recipe().getHeight());
-        int cellWidth = Math.max(1, GRID_SIZE / width);
-        int cellHeight = Math.max(1, GRID_SIZE / height);
-        int slotSize = Math.max(1, Math.min(18, Math.min(cellWidth, cellHeight)));
+        float cellSize = (float) GRID_SIZE / height;
+        float startX = (GRID_SIZE - width * cellSize) / 2.0F;
+        int slotSize = Math.max(1, Math.min(18, (int) Math.floor(cellSize)));
         IIngredientRenderer<ItemStack> inputRenderer = new ScaledItemRenderer(slotSize);
         List<Ingredient> recipeInputs = wrapper.recipe().getSupremeIngredients();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                int sx = Math.round((float) GRID_SIZE * x / width + (cellWidth - slotSize) / 2.0F);
-                int sy = Math.round((float) GRID_SIZE * y / height + (cellHeight - slotSize) / 2.0F);
+                int sx = Math.round(startX + x * cellSize + (cellSize - slotSize) / 2.0F);
+                int sy = Math.round(y * cellSize + (cellSize - slotSize) / 2.0F);
                 int slot = SupremeTableInventory.indexOf(x, y);
                 recipeLayout.getItemStacks().init(slot, true, inputRenderer, sx, sy, slotSize, slotSize, 0, 0);
                 int ingredientIndex = x + y * width;
