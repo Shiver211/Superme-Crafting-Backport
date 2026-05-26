@@ -131,6 +131,25 @@ public final class SupremeTableAe2Bridge {
         return ItemStack.EMPTY;
     }
 
+    public static ItemStack insert(EntityPlayer player, TileSupremeTable table, ItemStack stack) {
+        if (stack.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+        AeStorage storage = storage(table);
+        if (storage == null) {
+            return stack;
+        }
+        IAEItemStack input = AEApi.instance().storage()
+                .getStorageChannel(IItemStorageChannel.class)
+                .createStack(stack);
+        if (input == null) {
+            return stack;
+        }
+        IAEItemStack leftover = AEApi.instance().storage()
+                .poweredInsert(storage.energy, storage.items, input, new TableActionSource(player, table), Actionable.MODULATE);
+        return leftover == null ? ItemStack.EMPTY : leftover.createItemStack();
+    }
+
     private static AeStorage storage(TileSupremeTable table) {
         IGridNode node = getGridNode(table);
         if (node == null || !node.isActive()) {

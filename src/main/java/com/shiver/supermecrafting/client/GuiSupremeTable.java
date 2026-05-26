@@ -1,5 +1,7 @@
 package com.shiver.supermecrafting.client;
 
+import com.shiver.supermecrafting.net.PacketReturnTableItems;
+import com.shiver.supermecrafting.net.SCNetwork;
 import com.shiver.supermecrafting.table.ContainerSupremeTable;
 import com.shiver.supermecrafting.table.SupremeTableInventory;
 import com.shiver.supermecrafting.table.ViewportSlot;
@@ -46,6 +48,7 @@ public class GuiSupremeTable extends GuiContainer {
     private static final int MOVE_GAP = 3;
     private static final int GROUP_BUTTON_ID = 100;
     private static final int MOVE_BUTTON_ID = 200;
+    private static final int RETURN_BUTTON_ID = 300;
 
     private final ContainerSupremeTable tableContainer;
     private double panOffsetX;
@@ -71,6 +74,7 @@ public class GuiSupremeTable extends GuiContainer {
         panOffsetY = CanvasMath.clampPan(canvasHeight() / 2.0 - SupremeTableInventory.HEIGHT * cellSize / 2.0,
                 canvasHeight(), cellSize, SupremeTableInventory.HEIGHT, EDGE_PAD);
         initNavigationButtons();
+        initReturnButton();
     }
 
     private int canvasWidth() {
@@ -291,6 +295,12 @@ public class GuiSupremeTable extends GuiContainer {
         }
     }
 
+    private void initReturnButton() {
+        int x = guiLeft + ContainerSupremeTable.RESULT_SLOT_X - 2;
+        int y = guiTop + ContainerSupremeTable.RESULT_SLOT_Y + 24;
+        buttonList.add(new GuiButton(RETURN_BUTTON_ID, x, y, 20, 20, "E"));
+    }
+
     @Override
     protected boolean isPointInRegion(int left, int top, int right, int bottom, int pointX, int pointY) {
         if (left == OFFSCREEN || top == OFFSCREEN) {
@@ -447,6 +457,10 @@ public class GuiSupremeTable extends GuiContainer {
         }
         if (button.id >= MOVE_BUTTON_ID && button.id < MOVE_BUTTON_ID + 4) {
             moveView(button.id - MOVE_BUTTON_ID);
+            return;
+        }
+        if (button.id == RETURN_BUTTON_ID) {
+            SCNetwork.CHANNEL.sendToServer(new PacketReturnTableItems());
             return;
         }
         super.actionPerformed(button);
