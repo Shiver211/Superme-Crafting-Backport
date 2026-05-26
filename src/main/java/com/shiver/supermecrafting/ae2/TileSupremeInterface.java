@@ -85,10 +85,13 @@ public class TileSupremeInterface extends TileEntity implements IInventory, IGri
                 inputs.add(stack.copy());
             }
         }
-        ItemStack output = patternDetails.getCondensedOutputs().length == 0
-                ? ItemStack.EMPTY
-                : patternDetails.getCondensedOutputs()[0].createItemStack();
-        return assembler.start(this, inputs, output);
+        NonNullList<ItemStack> outputs = NonNullList.create();
+        for (appeng.api.storage.data.IAEItemStack stack : patternDetails.getCondensedOutputs()) {
+            if (stack != null) {
+                outputs.add(stack.createItemStack());
+            }
+        }
+        return assembler.start(this, inputs, outputs);
     }
 
     @Override
@@ -105,6 +108,13 @@ public class TileSupremeInterface extends TileEntity implements IInventory, IGri
             pendingOutputs.add(remaining);
         }
         markDirty();
+        return true;
+    }
+
+    public boolean receiveAssemblerOutputs(List<ItemStack> stacks) {
+        for (ItemStack stack : stacks) {
+            receiveAssemblerOutput(stack);
+        }
         return true;
     }
 

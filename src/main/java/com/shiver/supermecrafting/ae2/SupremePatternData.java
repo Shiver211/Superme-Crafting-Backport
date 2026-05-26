@@ -1,11 +1,14 @@
 package com.shiver.supermecrafting.ae2;
 
 import com.shiver.supermecrafting.recipe.SupremeCraftingMatcher;
+import com.shiver.supermecrafting.recipe.SupremeRecipe;
 import com.shiver.supermecrafting.table.SupremeTableInventory;
+import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.items.ItemHandlerHelper;
 
@@ -18,6 +21,7 @@ public final class SupremePatternData {
     private static final String TAG_RECIPE_NAME = "RecipeName";
     private static final String TAG_INPUTS = "Inputs";
     private static final String TAG_OUTPUT = "Output";
+    private static final String TAG_EXTRA_OUTPUTS = "ExtraOutputs";
 
     private SupremePatternData() {
     }
@@ -32,10 +36,15 @@ public final class SupremePatternData {
         NBTTagCompound root = new NBTTagCompound();
         NBTTagCompound data = new NBTTagCompound();
         ResourceLocation id = recipe.getRegistryName();
+        ItemStack output = craftingOutput(recipe, inventory);
+        if (output.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
         data.setString(TAG_RECIPE_ID, id == null ? "" : id.toString());
-        data.setString(TAG_RECIPE_NAME, id == null ? recipe.getRecipeOutput().getDisplayName() : id.toString());
+        data.setString(TAG_RECIPE_NAME, id == null ? output.getDisplayName() : id.toString());
         data.setTag(TAG_INPUTS, writeInputs(compressInputs(inventory)));
-        data.setTag(TAG_OUTPUT, recipe.getRecipeOutput().writeToNBT(new NBTTagCompound()));
+        data.setTag(TAG_OUTPUT, output.writeToNBT(new NBTTagCompound()));
+        data.setTag(TAG_EXTRA_OUTPUTS, writeInputs(extraOutputs(recipe, inventory)));
         root.setTag(TAG_ENCODED, data);
         out.setTagCompound(root);
         return out;
@@ -61,6 +70,25 @@ public final class SupremePatternData {
             return ItemStack.EMPTY;
         }
         return new ItemStack(pattern.getTagCompound().getCompoundTag(TAG_ENCODED).getCompoundTag(TAG_OUTPUT));
+    }
+
+    public static List<ItemStack> readOutputs(ItemStack pattern) {
+        List<ItemStack> outputs = new ArrayList<>();
+        ItemStack output = readOutput(pattern);
+        if (!output.isEmpty()) {
+            outputs.add(output);
+        }
+        if (!isEncoded(pattern)) {
+            return outputs;
+        }
+        NBTTagList list = pattern.getTagCompound().getCompoundTag(TAG_ENCODED).getTagList(TAG_EXTRA_OUTPUTS, 10);
+        for (int i = 0; i < list.tagCount(); i++) {
+            ItemStack stack = new ItemStack(list.getCompoundTagAt(i));
+            if (!stack.isEmpty()) {
+                outputs.add(stack);
+            }
+        }
+        return outputs;
     }
 
     public static String readRecipeName(ItemStack pattern) {
@@ -93,6 +121,32 @@ public final class SupremePatternData {
         return inputs;
     }
 
+    private static ItemStack craftingOutput(IRecipe recipe, SupremeTableInventory inventory) {
+        if (recipe instanceof SupremeRecipe) {
+            return recipe.getRecipeOutput().copy();
+        }
+        InventoryCrafting crafting = SupremeCraftingMatcher.craftingInventory(inventory);
+        return crafting == null ? recipe.getRecipeOutput().copy() : recipe.getCraftingResult(crafting);
+    }
+
+    private static List<ItemStack> extraOutputs(IRecipe recipe, SupremeTableInventory inventory) {
+        List<ItemStack> outputs = new ArrayList<>();
+        if (recipe instanceof SupremeRecipe) {
+            return outputs;
+        }
+        InventoryCrafting crafting = SupremeCraftingMatcher.craftingInventory(inventory);
+        if (crafting == null) {
+            return outputs;
+        }
+        NonNullList<ItemStack> remaining = recipe.getRemainingItems(crafting);
+        for (ItemStack stack : remaining) {
+            if (!stack.isEmpty()) {
+                addOrGrow(outputs, stack);
+            }
+        }
+        return outputs;
+    }
+
     private static ItemStack findStack(List<ItemStack> inputs, ItemStack stack) {
         for (ItemStack existing : inputs) {
             if (ItemHandlerHelper.canItemStacksStack(existing, stack)) {
@@ -100,6 +154,16 @@ public final class SupremePatternData {
             }
         }
         return null;
+    }
+
+    private static void addOrGrow(List<ItemStack> stacks, ItemStack stack) {
+        ItemStack copy = stack.copy();
+        ItemStack existing = findStack(stacks, copy);
+        if (existing == null) {
+            stacks.add(copy);
+        } else {
+            existing.grow(copy.getCount());
+        }
     }
 
     private static NBTTagList writeInputs(List<ItemStack> inputs) {

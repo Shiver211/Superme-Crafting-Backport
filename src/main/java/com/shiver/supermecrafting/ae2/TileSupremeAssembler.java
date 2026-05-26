@@ -12,16 +12,17 @@ public class TileSupremeAssembler extends TileEntity implements ITickable {
     private static final int CRAFT_TICKS = 20;
 
     private final NonNullList<ItemStack> inputs = NonNullList.create();
-    private ItemStack output = ItemStack.EMPTY;
+    private final NonNullList<ItemStack> outputs = NonNullList.create();
     private int remainingTicks;
     private long interfacePos;
+    private boolean crafted;
 
     public boolean isBusy() {
-        return remainingTicks > 0 || !output.isEmpty();
+        return remainingTicks > 0 || !outputs.isEmpty();
     }
 
-    public boolean start(TileSupremeInterface owner, NonNullList<ItemStack> taskInputs, ItemStack taskOutput) {
-        if (isBusy() || taskOutput.isEmpty()) {
+    public boolean start(TileSupremeInterface owner, NonNullList<ItemStack> taskInputs, NonNullList<ItemStack> taskOutputs) {
+        if (isBusy() || taskOutputs.isEmpty()) {
             return false;
         }
         inputs.clear();
@@ -30,9 +31,15 @@ public class TileSupremeAssembler extends TileEntity implements ITickable {
                 inputs.add(stack.copy());
             }
         }
-        output = taskOutput.copy();
+        outputs.clear();
+        for (ItemStack stack : taskOutputs) {
+            if (!stack.isEmpty()) {
+                outputs.add(stack.copy());
+            }
+        }
         remainingTicks = CRAFT_TICKS;
         interfacePos = owner.getPos().toLong();
+        crafted = false;
         markDirty();
         return true;
     }
@@ -44,10 +51,12 @@ public class TileSupremeAssembler extends TileEntity implements ITickable {
         }
         remainingTicks--;
         if (remainingTicks <= 0) {
+            crafted = true;
             TileEntity tile = world.getTileEntity(net.minecraft.util.math.BlockPos.fromLong(interfacePos));
-            if (tile instanceof TileSupremeInterface && ((TileSupremeInterface) tile).receiveAssemblerOutput(output.copy())) {
+            if (tile instanceof TileSupremeInterface && ((TileSupremeInterface) tile).receiveAssemblerOutputs(copyOutputs())) {
                 inputs.clear();
-                output = ItemStack.EMPTY;
+                outputs.clear();
+                crafted = false;
                 markDirty();
             } else {
                 remainingTicks = 1;
@@ -60,12 +69,17 @@ public class TileSupremeAssembler extends TileEntity implements ITickable {
         super.writeToNBT(compound);
         compound.setInteger("RemainingTicks", remainingTicks);
         compound.setLong("InterfacePos", interfacePos);
-        compound.setTag("Output", output.writeToNBT(new NBTTagCompound()));
+        compound.setBoolean("Crafted", crafted);
         NBTTagList list = new NBTTagList();
         for (ItemStack stack : inputs) {
             list.appendTag(stack.writeToNBT(new NBTTagCompound()));
         }
         compound.setTag("Inputs", list);
+        NBTTagList outputList = new NBTTagList();
+        for (ItemStack stack : outputs) {
+            outputList.appendTag(stack.writeToNBT(new NBTTagCompound()));
+        }
+        compound.setTag("Outputs", outputList);
         return compound;
     }
 
@@ -74,13 +88,27 @@ public class TileSupremeAssembler extends TileEntity implements ITickable {
         super.readFromNBT(compound);
         remainingTicks = compound.getInteger("RemainingTicks");
         interfacePos = compound.getLong("InterfacePos");
-        output = new ItemStack(compound.getCompoundTag("Output"));
+        crafted = compound.getBoolean("Crafted");
         inputs.clear();
         NBTTagList list = compound.getTagList("Inputs", 10);
         for (int i = 0; i < list.tagCount(); i++) {
             ItemStack stack = new ItemStack(list.getCompoundTagAt(i));
             if (!stack.isEmpty()) {
                 inputs.add(stack);
+            }
+        }
+        outputs.clear();
+        NBTTagList outputList = compound.getTagList("Outputs", 10);
+        for (int i = 0; i < outputList.tagCount(); i++) {
+            ItemStack stack = new ItemStack(outputList.getCompoundTagAt(i));
+            if (!stack.isEmpty()) {
+                outputs.add(stack);
+            }
+        }
+        if (outputs.isEmpty() && compound.hasKey("Output", 10)) {
+            ItemStack oldOutput = new ItemStack(compound.getCompoundTag("Output"));
+            if (!oldOutput.isEmpty()) {
+                outputs.add(oldOutput);
             }
         }
     }
@@ -90,12 +118,26 @@ public class TileSupremeAssembler extends TileEntity implements ITickable {
             return;
         }
         for (ItemStack stack : inputs) {
-            if (!stack.isEmpty()) {
+            if (!crafted && !stack.isEmpty()) {
                 InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), stack);
             }
         }
-        if (!output.isEmpty()) {
-            InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), output);
+        if (crafted) {
+            for (ItemStack stack : outputs) {
+                if (!stack.isEmpty()) {
+                    InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), stack);
+                }
+            }
         }
+    }
+
+    private NonNullList<ItemStack> copyOutputs() {
+        NonNullList<ItemStack> copy = NonNullList.create();
+        for (ItemStack stack : outputs) {
+            if (!stack.isEmpty()) {
+                copy.add(stack.copy());
+            }
+        }
+        return copy;
     }
 }

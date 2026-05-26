@@ -16,7 +16,11 @@ public final class SupremeCraftingMatcher {
 
     public static ItemStack findResult(SupremeTableInventory inventory, World world) {
         IRecipe recipe = findRecipe(inventory, world);
-        return recipe == null ? ItemStack.EMPTY : recipe.getRecipeOutput().copy();
+        if (recipe == null) {
+            return ItemStack.EMPTY;
+        }
+        InventoryCrafting crafting = craftingInventory(inventory);
+        return crafting == null ? recipe.getRecipeOutput().copy() : recipe.getCraftingResult(crafting);
     }
 
     public static IRecipe findRecipe(SupremeTableInventory inventory, World world) {
@@ -28,23 +32,31 @@ public final class SupremeCraftingMatcher {
                 return recipe;
             }
         }
-        Bounds b = bounds(inventory);
-        if (b != null && b.width() <= 3 && b.height() <= 3) {
-            InventoryCrafting crafting = new InventoryCrafting(new Container() {
-                @Override
-                public boolean canInteractWith(net.minecraft.entity.player.EntityPlayer playerIn) {
-                    return false;
-                }
-            }, b.width(), b.height());
-            for (int y = 0; y < b.height(); y++) {
-                for (int x = 0; x < b.width(); x++) {
-                    crafting.setInventorySlotContents(x + y * b.width(),
-                            inventory.get(SupremeTableInventory.indexOf(b.minX + x, b.minY + y)));
-                }
-            }
+        InventoryCrafting crafting = craftingInventory(inventory);
+        if (crafting != null) {
             return CraftingManager.findMatchingRecipe(crafting, world);
         }
         return null;
+    }
+
+    public static InventoryCrafting craftingInventory(SupremeTableInventory inventory) {
+        Bounds b = bounds(inventory);
+        if (b == null || b.width() > 3 || b.height() > 3) {
+            return null;
+        }
+        InventoryCrafting crafting = new InventoryCrafting(new Container() {
+            @Override
+            public boolean canInteractWith(net.minecraft.entity.player.EntityPlayer playerIn) {
+                return false;
+            }
+        }, b.width(), b.height());
+        for (int y = 0; y < b.height(); y++) {
+            for (int x = 0; x < b.width(); x++) {
+                crafting.setInventorySlotContents(x + y * b.width(),
+                        inventory.get(SupremeTableInventory.indexOf(b.minX + x, b.minY + y)));
+            }
+        }
+        return crafting;
     }
 
     public static void consume(SupremeTableInventory inventory, World world) {

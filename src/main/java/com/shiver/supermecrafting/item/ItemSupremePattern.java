@@ -7,6 +7,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -17,6 +18,8 @@ import java.util.List;
 public class ItemSupremePattern extends Item {
     public ItemSupremePattern() {
         setMaxStackSize(64);
+        addPropertyOverride(new ResourceLocation("encoded"),
+                (stack, worldIn, entityIn) -> SupremePatternData.isEncoded(stack) ? 1.0F : 0.0F);
     }
 
     @Override

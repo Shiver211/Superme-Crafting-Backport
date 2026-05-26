@@ -28,9 +28,12 @@ public class SupremeCraftingPatternDetails implements ICraftingPatternDetails {
             this.inputs[i] = stack;
             this.condensedInputs[i] = stack == null ? null : stack.copy();
         }
-        IAEItemStack output = AEApi.instance().storage()
-                .getStorageChannel(IItemStorageChannel.class).createStack(SupremePatternData.readOutput(pattern));
-        this.outputs = output == null ? new IAEItemStack[0] : new IAEItemStack[] { output };
+        List<ItemStack> outputStacks = SupremePatternData.readOutputs(pattern);
+        this.outputs = new IAEItemStack[outputStacks.size()];
+        for (int i = 0; i < outputStacks.size(); i++) {
+            this.outputs[i] = AEApi.instance().storage()
+                    .getStorageChannel(IItemStorageChannel.class).createStack(outputStacks.get(i));
+        }
     }
 
     @Override public ItemStack getPattern() { return pattern.copy(); }

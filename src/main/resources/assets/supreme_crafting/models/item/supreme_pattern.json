@@ -2,5 +2,13 @@
   "parent": "item/generated",
   "textures": {
     "layer0": "supreme_crafting:items/material_blank_pattern"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "encoded": 1
+      },
+      "model": "supreme_crafting:item/supreme_pattern_encoded"
+    }
+  ]
 }
