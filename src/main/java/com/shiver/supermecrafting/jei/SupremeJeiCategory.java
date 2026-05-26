@@ -25,13 +25,19 @@ public class SupremeJeiCategory implements IRecipeCategory<SupremeRecipeWrapper>
     private static final int GRID_SIZE = 144;
     private static final int OUTPUT_X = 180;
     private static final int OUTPUT_Y = 63;
+    public static final int WIDTH = 202;
+    public static final int HEIGHT = 214;
+    public static final int MATERIAL_X = 8;
+    public static final int MATERIAL_Y = 154;
+    public static final int MATERIAL_W = 186;
+    public static final int MATERIAL_H = 52;
 
     private final IDrawable icon;
     private final IDrawableStatic background;
 
     public SupremeJeiCategory(IGuiHelper helper) {
         this.icon = helper.createDrawableIngredient(new ItemStack(SCRegistry.SUPREME_TABLE));
-        this.background = helper.createBlankDrawable(202, 144);
+        this.background = helper.createBlankDrawable(WIDTH, HEIGHT);
     }
 
     @Override public String getUid() { return SupremeJeiPlugin.UID; }
@@ -72,6 +78,12 @@ public class SupremeJeiCategory implements IRecipeCategory<SupremeRecipeWrapper>
         for (int i = 0; i < 6; i++) {
             net.minecraft.client.gui.Gui.drawRect(174 - i, 67 + i, 175 - i, 76 - i, color);
         }
+        net.minecraft.client.gui.Gui.drawRect(MATERIAL_X - 2, MATERIAL_Y - 2,
+                MATERIAL_X + MATERIAL_W + 2, MATERIAL_Y + MATERIAL_H + 2, 0xFF8B8B8B);
+        net.minecraft.client.gui.Gui.drawRect(MATERIAL_X - 1, MATERIAL_Y - 1,
+                MATERIAL_X + MATERIAL_W + 1, MATERIAL_Y + MATERIAL_H + 1, 0xFFFFFFFF);
+        net.minecraft.client.gui.Gui.drawRect(MATERIAL_X, MATERIAL_Y,
+                MATERIAL_X + MATERIAL_W, MATERIAL_Y + MATERIAL_H, 0xFFC6C6C6);
     }
 
     private static class ScaledItemRenderer implements IIngredientRenderer<ItemStack> {
@@ -104,9 +116,6 @@ public class SupremeJeiCategory implements IRecipeCategory<SupremeRecipeWrapper>
 
         @Override
         public List<String> getTooltip(Minecraft minecraft, ItemStack ingredient, ITooltipFlag tooltipFlag) {
-            if (ingredient == null || ingredient.isEmpty()) {
-                return java.util.Collections.emptyList();
-            }
             return ingredient.getTooltip(minecraft.player, tooltipFlag);
         }
     }

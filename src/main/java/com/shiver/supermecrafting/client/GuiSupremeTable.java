@@ -3,6 +3,7 @@ package com.shiver.supermecrafting.client;
 import com.shiver.supermecrafting.table.ContainerSupremeTable;
 import com.shiver.supermecrafting.table.SupremeTableInventory;
 import com.shiver.supermecrafting.table.ViewportSlot;
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -37,6 +38,14 @@ public class GuiSupremeTable extends GuiContainer {
     private static final double MAX_CELL = 36.0;
     private static final double ZOOM_STEP = 1.15;
     private static final double EDGE_PAD = 60.0;
+    private static final double NAV_PAD = 12.0;
+    private static final int GROUP_SIZE = 27;
+    private static final int QUICK_BUTTON = 20;
+    private static final int QUICK_GAP = 4;
+    private static final int MOVE_BUTTON = 20;
+    private static final int MOVE_GAP = 3;
+    private static final int GROUP_BUTTON_ID = 100;
+    private static final int MOVE_BUTTON_ID = 200;
 
     private final ContainerSupremeTable tableContainer;
     private double panOffsetX;
@@ -61,6 +70,7 @@ public class GuiSupremeTable extends GuiContainer {
                 canvasWidth(), cellSize, SupremeTableInventory.WIDTH, EDGE_PAD);
         panOffsetY = CanvasMath.clampPan(canvasHeight() / 2.0 - SupremeTableInventory.HEIGHT * cellSize / 2.0,
                 canvasHeight(), cellSize, SupremeTableInventory.HEIGHT, EDGE_PAD);
+        initNavigationButtons();
     }
 
     private int canvasWidth() {
@@ -232,6 +242,55 @@ public class GuiSupremeTable extends GuiContainer {
         }
     }
 
+    private Rectangle groupButtonBounds(int index) {
+        int col = index % 3;
+        int row = index / 3;
+        int total = QUICK_BUTTON * 3 + QUICK_GAP * 2;
+        int invLeft = guiLeft + (xSize - 9 * 18) / 2;
+        int leftSpace = invLeft - guiLeft;
+        int startX = guiLeft + Math.max(8, (leftSpace - total) / 2);
+        int startY = guiTop + TITLE_HEIGHT + CANVAS_HEIGHT + PLAYER_INV_GAP + 3;
+        return new Rectangle(startX + col * (QUICK_BUTTON + QUICK_GAP),
+                startY + row * (QUICK_BUTTON + QUICK_GAP), QUICK_BUTTON, QUICK_BUTTON);
+    }
+
+    private Rectangle moveButtonBounds(int direction) {
+        int invLeft = guiLeft + (xSize - 9 * 18) / 2;
+        int invRight = invLeft + 9 * 18;
+        int centerX = invRight + (guiLeft + xSize - invRight) / 2;
+        Rectangle firstGroupButton = groupButtonBounds(0);
+        int groupHeight = QUICK_BUTTON * 3 + QUICK_GAP * 2;
+        int centerY = firstGroupButton.y + groupHeight / 2;
+        int step = MOVE_BUTTON + MOVE_GAP;
+        int x = centerX - MOVE_BUTTON / 2;
+        int y = centerY - MOVE_BUTTON / 2;
+        if (direction == 0) y -= step;
+        if (direction == 1) x -= step;
+        if (direction == 2) x += step;
+        if (direction == 3) y += step;
+        return new Rectangle(x, y, MOVE_BUTTON, MOVE_BUTTON);
+    }
+
+    private String directionLabel(int direction) {
+        if (direction == 0) return "^";
+        if (direction == 1) return "<";
+        if (direction == 2) return ">";
+        return "v";
+    }
+
+    private void initNavigationButtons() {
+        for (int i = 0; i < 9; i++) {
+            Rectangle bounds = groupButtonBounds(i);
+            buttonList.add(new GuiButton(GROUP_BUTTON_ID + i, bounds.x, bounds.y, bounds.width, bounds.height,
+                    String.valueOf(i + 1)));
+        }
+        for (int i = 0; i < 4; i++) {
+            Rectangle bounds = moveButtonBounds(i);
+            buttonList.add(new GuiButton(MOVE_BUTTON_ID + i, bounds.x, bounds.y, bounds.width, bounds.height,
+                    directionLabel(i)));
+        }
+    }
+
     @Override
     protected boolean isPointInRegion(int left, int top, int right, int bottom, int pointX, int pointY) {
         if (left == OFFSCREEN || top == OFFSCREEN) {
@@ -377,6 +436,44 @@ public class GuiSupremeTable extends GuiContainer {
             return;
         }
         super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+    }
+
+    @Override
+    protected void actionPerformed(GuiButton button) throws IOException {
+        if (button.id >= GROUP_BUTTON_ID && button.id < GROUP_BUTTON_ID + 9) {
+            int group = button.id - GROUP_BUTTON_ID;
+            centerGroup(group % 3, group / 3);
+            return;
+        }
+        if (button.id >= MOVE_BUTTON_ID && button.id < MOVE_BUTTON_ID + 4) {
+            moveView(button.id - MOVE_BUTTON_ID);
+            return;
+        }
+        super.actionPerformed(button);
+    }
+
+    private void centerGroup(int groupX, int groupY) {
+        double availableWidth = Math.max(1.0, canvasWidth() - NAV_PAD * 2.0);
+        double availableHeight = Math.max(1.0, canvasHeight() - NAV_PAD * 2.0);
+        cellSize = Math.min(MAX_CELL, Math.min(availableWidth, availableHeight) / (double) GROUP_SIZE);
+        centerOnGrid(groupX * GROUP_SIZE + GROUP_SIZE / 2.0, groupY * GROUP_SIZE + GROUP_SIZE / 2.0, NAV_PAD);
+    }
+
+    private void moveView(int direction) {
+        double centerX = (canvasWidth() / 2.0 - panOffsetX) / cellSize;
+        double centerY = (canvasHeight() / 2.0 - panOffsetY) / cellSize;
+        if (direction == 0) centerY -= 1.0;
+        if (direction == 1) centerX -= 1.0;
+        if (direction == 2) centerX += 1.0;
+        if (direction == 3) centerY += 1.0;
+        centerOnGrid(centerX, centerY, NAV_PAD);
+    }
+
+    private void centerOnGrid(double gridX, double gridY, double edgePad) {
+        panOffsetX = CanvasMath.clampPan(canvasWidth() / 2.0 - gridX * cellSize,
+                canvasWidth(), cellSize, SupremeTableInventory.WIDTH, edgePad);
+        panOffsetY = CanvasMath.clampPan(canvasHeight() / 2.0 - gridY * cellSize,
+                canvasHeight(), cellSize, SupremeTableInventory.HEIGHT, edgePad);
     }
 
     @Override
