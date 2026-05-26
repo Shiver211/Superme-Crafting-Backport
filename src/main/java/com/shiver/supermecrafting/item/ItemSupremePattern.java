@@ -1,5 +1,8 @@
 package com.shiver.supermecrafting.item;
 
+import appeng.api.implementations.ICraftingPatternItem;
+import appeng.api.networking.crafting.ICraftingPatternDetails;
+import com.shiver.supermecrafting.ae2.SupremeCraftingPatternDetails;
 import com.shiver.supermecrafting.ae2.SupremePatternData;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
@@ -17,7 +20,7 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ItemSupremePattern extends Item {
+public class ItemSupremePattern extends Item implements ICraftingPatternItem {
     public ItemSupremePattern() {
         setMaxStackSize(64);
         addPropertyOverride(new ResourceLocation("encoded"),
@@ -62,5 +65,10 @@ public class ItemSupremePattern extends Item {
                 tooltip.add(output.getDisplayName() + " x" + output.getCount());
             }
         }
+    }
+
+    @Override
+    public ICraftingPatternDetails getPatternForItem(ItemStack is, World w) {
+        return SupremePatternData.isRecipeValid(is, w) ? new SupremeCraftingPatternDetails(is, w) : null;
     }
 }

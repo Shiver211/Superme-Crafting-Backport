@@ -10,6 +10,7 @@ import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class SupremeCraftingPatternDetails implements ICraftingPatternDetails {
     private final ItemStack pattern;
@@ -45,6 +46,24 @@ public class SupremeCraftingPatternDetails implements ICraftingPatternDetails {
     }
     @Override public int getPriority() { return priority; }
     @Override public void setPriority(int priority) { this.priority = priority; }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pattern.getItem(), pattern.getMetadata(), pattern.getTagCompound());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof SupremeCraftingPatternDetails)) {
+            return false;
+        }
+        SupremeCraftingPatternDetails other = (SupremeCraftingPatternDetails) obj;
+        return ItemStack.areItemsEqual(pattern, other.pattern)
+                && ItemStack.areItemStackTagsEqual(pattern, other.pattern);
+    }
 
     private static List<ItemStack> validOutputs(ItemStack pattern, World world) {
         List<ItemStack> outputs = new ArrayList<>();
