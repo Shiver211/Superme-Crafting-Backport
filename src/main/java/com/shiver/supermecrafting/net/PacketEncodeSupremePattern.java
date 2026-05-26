@@ -9,8 +9,17 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class PacketEncodeSupremePattern implements IMessage {
-    @Override public void fromBytes(ByteBuf buf) {}
-    @Override public void toBytes(ByteBuf buf) {}
+    private boolean clear;
+
+    public PacketEncodeSupremePattern() {
+    }
+
+    public PacketEncodeSupremePattern(boolean clear) {
+        this.clear = clear;
+    }
+
+    @Override public void fromBytes(ByteBuf buf) { clear = buf.readBoolean(); }
+    @Override public void toBytes(ByteBuf buf) { buf.writeBoolean(clear); }
 
     public static class Handler implements IMessageHandler<PacketEncodeSupremePattern, IMessage> {
         @Override
@@ -19,7 +28,12 @@ public class PacketEncodeSupremePattern implements IMessage {
             FMLCommonHandler.instance().getMinecraftServerInstance().addScheduledTask(() -> {
                 if (player.openContainer instanceof ContainerSupremePatternTerminal) {
                     ContainerSupremePatternTerminal container = (ContainerSupremePatternTerminal) player.openContainer;
-                    container.terminal().encode();
+                    if (message.clear) {
+                        container.terminal().grid().clear();
+                        container.terminal().markDirty();
+                    } else {
+                        container.terminal().encode();
+                    }
                     container.detectAndSendChanges();
                 }
             });

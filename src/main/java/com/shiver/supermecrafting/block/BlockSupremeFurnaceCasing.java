@@ -20,6 +20,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.property.ExtendedBlockState;
@@ -84,10 +85,10 @@ public class BlockSupremeFurnaceCasing extends Block {
             if (!world.isRemote) {
                 Region region = MultiblockRegions.get(world).findContaining(pos);
                 if (region == null) {
-                    player.sendMessage(new net.minecraft.util.text.TextComponentString("Not part of a formed Supreme Furnace."));
+                    player.sendMessage(new TextComponentTranslation("supreme_crafting.message.not_formed_furnace"));
                 } else {
                     stack.getOrCreateSubCompound("supreme_crafting").setUniqueId("region", region.getId());
-                    player.sendMessage(new net.minecraft.util.text.TextComponentString("Terminal bound."));
+                    player.sendMessage(new TextComponentTranslation("supreme_crafting.message.terminal_bound"));
                 }
             }
             return true;
@@ -97,7 +98,7 @@ public class BlockSupremeFurnaceCasing extends Block {
             if (region != null) {
                 player.openGui(SupremeCrafting.INSTANCE, GuiIds.SUPREME_FURNACE, world, pos.getX(), pos.getY(), pos.getZ());
             } else {
-                player.sendMessage(new net.minecraft.util.text.TextComponentString("Not part of a formed structure."));
+                player.sendMessage(new TextComponentTranslation("supreme_crafting.message.not_formed_structure"));
             }
         }
         return true;

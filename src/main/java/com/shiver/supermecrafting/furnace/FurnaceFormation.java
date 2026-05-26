@@ -7,7 +7,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 
 import java.util.ArrayDeque;
@@ -29,10 +29,10 @@ public final class FurnaceFormation {
 
     public static Result tryForm(World world, BlockPos start, EntityPlayer player) {
         if (MultiblockRegions.get(world).findContaining(start) != null) {
-            return Result.failure("this block is already part of a formed structure");
+            return Result.failure("supreme_crafting.message.furnace.already_formed");
         }
         if (!isShell(world.getBlockState(start))) {
-            return Result.failure("not a shell block");
+            return Result.failure("supreme_crafting.message.furnace.not_shell");
         }
         Set<BlockPos> shell = new HashSet<>();
         Queue<BlockPos> queue = new ArrayDeque<>();
@@ -47,7 +47,7 @@ public final class FurnaceFormation {
                 BlockPos next = pos.offset(facing);
                 if (shell.contains(next) || !isShell(world.getBlockState(next))) continue;
                 shell.add(next);
-                if (shell.size() > FLOOD_CAP) return Result.failure("connected casing exceeds cap");
+                if (shell.size() > FLOOD_CAP) return Result.failure("supreme_crafting.message.furnace.too_many_casings");
                 queue.add(next);
                 minX = Math.min(minX, next.getX());
                 maxX = Math.max(maxX, next.getX());
@@ -60,12 +60,12 @@ public final class FurnaceFormation {
         int xs = maxX - minX + 1;
         int ys = maxY - minY + 1;
         int zs = maxZ - minZ + 1;
-        if (xs != ys || ys != zs || !isValid(xs)) return Result.failure("size must be 32, 64 or 128 cube");
-        if (shell.size() != shellCount(xs)) return Result.failure("shell incomplete or has extras");
+        if (xs != ys || ys != zs || !isValid(xs)) return Result.failure("supreme_crafting.message.furnace.invalid_size");
+        if (shell.size() != shellCount(xs)) return Result.failure("supreme_crafting.message.furnace.incomplete_shell");
         for (int x = minX + 1; x < maxX; x++) {
             for (int y = minY + 1; y < maxY; y++) {
                 for (int z = minZ + 1; z < maxZ; z++) {
-                    if (!world.isAirBlock(new BlockPos(x, y, z))) return Result.failure("interior must be empty");
+                    if (!world.isAirBlock(new BlockPos(x, y, z))) return Result.failure("supreme_crafting.message.furnace.interior_not_empty");
                 }
             }
         }
@@ -75,7 +75,7 @@ public final class FurnaceFormation {
         Region region = MultiblockRegions.get(world).create(min, max, front);
         flip(world, min, max, true, front);
         MultiblockSync.add(world, region);
-        return Result.success("Supreme Furnace formed: " + xs + "^3", region);
+        return Result.success("supreme_crafting.message.furnace.formed", region, xs);
     }
 
     public static void disassemble(World world, Region region) {
@@ -122,25 +122,27 @@ public final class FurnaceFormation {
 
     public static final class Result {
         private final boolean success;
-        private final String message;
+        private final String messageKey;
         private final Region region;
+        private final Object[] args;
 
-        private Result(boolean success, String message, Region region) {
+        private Result(boolean success, String messageKey, Region region, Object... args) {
             this.success = success;
-            this.message = message;
+            this.messageKey = messageKey;
             this.region = region;
+            this.args = args;
         }
 
-        static Result success(String message, Region region) {
-            return new Result(true, message, region);
+        static Result success(String messageKey, Region region, Object... args) {
+            return new Result(true, messageKey, region, args);
         }
 
-        static Result failure(String message) {
-            return new Result(false, "Cannot form: " + message, null);
+        static Result failure(String messageKey) {
+            return new Result(false, messageKey, null);
         }
 
         public ITextComponent message() {
-            return new TextComponentString(message);
+            return new TextComponentTranslation(messageKey, args);
         }
     }
 }

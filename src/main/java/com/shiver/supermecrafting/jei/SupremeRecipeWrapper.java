@@ -54,7 +54,8 @@ public class SupremeRecipeWrapper implements IRecipeWrapper {
         int maxPage = maxPage();
         materialPage = Math.max(0, Math.min(materialPage, maxPage));
 
-        minecraft.fontRenderer.drawString("Materials", SupremeJeiCategory.MATERIAL_X,
+        minecraft.fontRenderer.drawString(net.minecraft.client.resources.I18n.format("jei.supreme_crafting.materials"),
+                SupremeJeiCategory.MATERIAL_X,
                 SupremeJeiCategory.MATERIAL_Y - 11, TEXT_COLOR);
         if (maxPage > 0) {
             String page = (materialPage + 1) + "/" + (maxPage + 1);

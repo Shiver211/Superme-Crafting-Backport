@@ -5,7 +5,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 
 import java.util.UUID;
@@ -68,7 +68,7 @@ public class RegionFurnaceInventory implements IInventory {
 
     @Override public String getName() { return "container.supreme_crafting.supreme_furnace"; }
     @Override public boolean hasCustomName() { return false; }
-    @Override public ITextComponent getDisplayName() { return new TextComponentString(getName()); }
+    @Override public ITextComponent getDisplayName() { return new TextComponentTranslation(getName()); }
     @Override public int getInventoryStackLimit() { return 64; }
     @Override public void markDirty() { MultiblockRegions.get(world).markDirty(); }
     @Override public boolean isUsableByPlayer(EntityPlayer player) { return region() != null; }

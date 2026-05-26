@@ -7,6 +7,7 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -35,6 +36,7 @@ public class GuiSupremePatternTerminal extends GuiContainer {
     private static final int HOTBAR_GAP = 4;
     private static final int OFFSCREEN = -9999;
     private static final int ENCODE_BUTTON_ID = 10;
+    private static final int CLEAR_BUTTON_ID = 11;
     private static final double DEFAULT_CELL = 18.0;
     private static final double MIN_CELL = 2.0;
     private static final double MAX_CELL = 36.0;
@@ -72,7 +74,8 @@ public class GuiSupremePatternTerminal extends GuiContainer {
                 canvasWidth(), cellSize, SupremeTableInventory.WIDTH, EDGE_PAD);
         panOffsetY = CanvasMath.clampPan(canvasHeight() / 2.0 - SupremeTableInventory.HEIGHT * cellSize / 2.0,
                 canvasHeight(), cellSize, SupremeTableInventory.HEIGHT, EDGE_PAD);
-        buttonList.add(new GuiButton(ENCODE_BUTTON_ID, guiLeft + 320, guiTop + 188, 30, 20, "->"));
+        buttonList.add(new GuiButton(ENCODE_BUTTON_ID, guiLeft + 327, guiTop + 187, 20, 20, "->"));
+        buttonList.add(new GuiButton(CLEAR_BUTTON_ID, guiLeft + 327, guiTop + 95, 20, 20, "C"));
         initNavigationButtons();
     }
 
@@ -161,7 +164,7 @@ public class GuiSupremePatternTerminal extends GuiContainer {
         drawCanvasStackTooltip(mouseX, mouseY);
         renderHoveredToolTip(mouseX, mouseY);
         if (overArrow(mouseX, mouseY)) {
-            drawHoveringText(java.util.Collections.singletonList("Show recipes for this table"), mouseX, mouseY);
+            drawHoveringText(java.util.Collections.singletonList(I18n.format("supreme_crafting.tooltip.show_recipes")), mouseX, mouseY);
         }
     }
 
@@ -186,6 +189,11 @@ public class GuiSupremePatternTerminal extends GuiContainer {
 
         renderGridChrome(cl, ct, cr, cb);
         drawSlotSprites();
+    }
+
+    @Override
+    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
+        fontRenderer.drawString(I18n.format("tile.supreme_crafting.supreme_pattern_terminal.name"), 8, 8, 4210752);
     }
 
     private void renderGridChrome(int cl, int ct, int cr, int cb) {
@@ -234,8 +242,11 @@ public class GuiSupremePatternTerminal extends GuiContainer {
 
     private void drawBlankPatternSlotState() {
         Slot slot = inventorySlots.inventorySlots.get(ContainerSupremePatternTerminal.BLANK_SLOT_INDEX);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.enableBlend();
         mc.getTextureManager().bindTexture(STATES_TEXTURE);
-        drawTexturedModalRect(guiLeft + slot.xPos, guiTop + slot.yPos, 0, 0, 16, 16);
+        drawScaledCustomSizeModalRect(guiLeft + slot.xPos, guiTop + slot.yPos,
+                0, 0, 16, 16, 16, 16, 16, 16);
     }
 
     private Rectangle groupButtonBounds(int index) {
@@ -424,6 +435,10 @@ public class GuiSupremePatternTerminal extends GuiContainer {
             sendEncode();
             return;
         }
+        if (button.id == CLEAR_BUTTON_ID) {
+            sendClearPatternTerminal();
+            return;
+        }
         super.actionPerformed(button);
     }
 
@@ -434,6 +449,16 @@ public class GuiSupremePatternTerminal extends GuiContainer {
             method.invoke(null);
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("Failed to send encode packet", e);
+        }
+    }
+
+    private static void sendClearPatternTerminal() {
+        try {
+            Class<?> bridge = Class.forName("com.shiver.supermecrafting.ae2.AE2NetworkBridge");
+            Method method = bridge.getMethod("sendClearPatternTerminal");
+            method.invoke(null);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Failed to send clear packet", e);
         }
     }
 

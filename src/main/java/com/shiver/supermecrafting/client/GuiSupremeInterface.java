@@ -36,10 +36,13 @@ public class GuiSupremeInterface extends GuiContainer {
     }
 
     private void drawPatternSlotStates() {
+        net.minecraft.client.renderer.GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        net.minecraft.client.renderer.GlStateManager.enableBlend();
         mc.getTextureManager().bindTexture(STATES_TEXTURE);
         for (int i = 0; i < PATTERN_SLOTS; i++) {
             Slot slot = inventorySlots.inventorySlots.get(i);
-            drawTexturedModalRect(guiLeft + slot.xPos, guiTop + slot.yPos, 0, 0, 16, 16);
+            drawScaledCustomSizeModalRect(guiLeft + slot.xPos, guiTop + slot.yPos,
+                    0, 0, 16, 16, 16, 16, 16, 16);
         }
     }
 

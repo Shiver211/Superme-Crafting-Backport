@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
@@ -162,7 +163,7 @@ public class GuiSupremeTable extends GuiContainer {
         drawCanvasStackTooltip(mouseX, mouseY);
         renderHoveredToolTip(mouseX, mouseY);
         if (overArrow(mouseX, mouseY)) {
-            drawHoveringText(java.util.Collections.singletonList("Show recipes for this table"), mouseX, mouseY);
+            drawHoveringText(java.util.Collections.singletonList(I18n.format("supreme_crafting.tooltip.show_recipes")), mouseX, mouseY);
         }
     }
 
@@ -187,6 +188,11 @@ public class GuiSupremeTable extends GuiContainer {
 
         renderGridChrome(cl, ct, cr, cb);
         drawSlotSprites();
+    }
+
+    @Override
+    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
+        fontRenderer.drawString(I18n.format("tile.supreme_crafting.supreme_table.name"), 8, 8, 4210752);
     }
 
     private void renderGridChrome(int cl, int ct, int cr, int cb) {

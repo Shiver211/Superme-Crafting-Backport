@@ -15,4 +15,8 @@ public final class AE2NetworkBridge {
     public static void sendEncode() {
         com.shiver.supermecrafting.net.SCNetwork.CHANNEL.sendToServer(new PacketEncodeSupremePattern());
     }
+
+    public static void sendClearPatternTerminal() {
+        com.shiver.supermecrafting.net.SCNetwork.CHANNEL.sendToServer(new PacketEncodeSupremePattern(true));
+    }
 }
