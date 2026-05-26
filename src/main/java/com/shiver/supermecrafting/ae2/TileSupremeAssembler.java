@@ -58,6 +58,12 @@ public class TileSupremeAssembler extends TileEntity implements ITickable {
                 outputs.clear();
                 crafted = false;
                 markDirty();
+            } else if (!(tile instanceof TileSupremeInterface)) {
+                dropOutputs();
+                inputs.clear();
+                outputs.clear();
+                crafted = false;
+                markDirty();
             } else {
                 remainingTicks = 1;
             }
@@ -127,6 +133,14 @@ public class TileSupremeAssembler extends TileEntity implements ITickable {
                 if (!stack.isEmpty()) {
                     InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), stack);
                 }
+            }
+        }
+    }
+
+    private void dropOutputs() {
+        for (ItemStack stack : outputs) {
+            if (!stack.isEmpty()) {
+                InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), stack);
             }
         }
     }

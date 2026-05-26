@@ -19,7 +19,6 @@ import appeng.api.storage.data.IAEItemStack;
 import appeng.api.util.AECableType;
 import appeng.api.util.AEPartLocation;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.IInventory;
@@ -30,6 +29,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -42,6 +42,8 @@ public class TileSupremeInterface extends TileEntity implements IInventory, IGri
 
     private final NonNullList<ItemStack> patterns = NonNullList.withSize(PATTERN_SLOTS, ItemStack.EMPTY);
     private final NonNullList<ItemStack> pendingOutputs = NonNullList.create();
+    private List<BlockPos> lastAssemblerPositions = new ArrayList<>();
+    private boolean patternChangePending;
     private Object ae2Node;
     private NBTTagCompound ae2NodeData;
 
@@ -49,18 +51,26 @@ public class TileSupremeInterface extends TileEntity implements IInventory, IGri
     public void update() {
         if (world != null && !world.isRemote) {
             retryOutputs();
+            refreshAssemblerPositions();
+            if (patternChangePending) {
+                patternChangePending = !postPatternChange();
+            }
         }
     }
 
     @Override
     public void provideCrafting(ICraftingProviderHelper craftingTracker) {
         IGridNode node = getGridNode(AEPartLocation.INTERNAL);
-        if (node == null || !node.isActive() || !hasAssembler()) {
+        if (node == null || !node.isActive()) {
             return;
         }
+        List<BlockPos> assemblerPositions = assemblerPositions();
         for (ItemStack pattern : patterns) {
             if (SupremePatternData.isRecipeValid(pattern, world)) {
-                craftingTracker.addCraftingOption(this, new SupremeCraftingPatternDetails(pattern, world));
+                SupremeCraftingPatternDetails details = new SupremeCraftingPatternDetails(pattern, world);
+                for (BlockPos assemblerPos : assemblerPositions) {
+                    craftingTracker.addCraftingOption(new AssemblerProvider(this, assemblerPos), details);
+                }
             }
         }
     }
@@ -72,6 +82,21 @@ public class TileSupremeInterface extends TileEntity implements IInventory, IGri
         }
         TileSupremeAssembler assembler = idleAssembler();
         if (assembler == null) {
+            return false;
+        }
+        return pushPatternTo(assembler.getPos(), patternDetails, table);
+    }
+
+    private boolean pushPatternTo(BlockPos assemblerPos, ICraftingPatternDetails patternDetails, InventoryCrafting table) {
+        if (!pendingOutputs.isEmpty()) {
+            return false;
+        }
+        TileEntity tile = world.getTileEntity(assemblerPos);
+        if (!(tile instanceof TileSupremeAssembler)) {
+            return false;
+        }
+        TileSupremeAssembler assembler = (TileSupremeAssembler) tile;
+        if (assembler.isBusy()) {
             return false;
         }
         IEnergyGrid energy = energyGrid();
@@ -167,6 +192,36 @@ public class TileSupremeInterface extends TileEntity implements IInventory, IGri
         return idleAssembler() != null;
     }
 
+    private List<BlockPos> assemblerPositions() {
+        List<BlockPos> positions = new ArrayList<>();
+        if (world == null) {
+            return positions;
+        }
+        for (EnumFacing face : EnumFacing.values()) {
+            BlockPos assemblerPos = pos.offset(face);
+            if (world.getTileEntity(assemblerPos) instanceof TileSupremeAssembler) {
+                positions.add(assemblerPos);
+            }
+        }
+        return positions;
+    }
+
+    private void refreshAssemblerPositions() {
+        List<BlockPos> currentPositions = assemblerPositions();
+        if (!currentPositions.equals(lastAssemblerPositions)) {
+            lastAssemblerPositions = currentPositions;
+            patternChangePending = !postPatternChange();
+        }
+    }
+
+    private boolean isAssemblerBusy(BlockPos assemblerPos) {
+        if (!pendingOutputs.isEmpty() || world == null) {
+            return true;
+        }
+        TileEntity tile = world.getTileEntity(assemblerPos);
+        return !(tile instanceof TileSupremeAssembler) || ((TileSupremeAssembler) tile).isBusy();
+    }
+
     private TileSupremeAssembler idleAssembler() {
         if (world == null) {
             return null;
@@ -234,11 +289,13 @@ public class TileSupremeInterface extends TileEntity implements IInventory, IGri
         }
     }
 
-    private void postPatternChange() {
+    private boolean postPatternChange() {
         IGridNode node = getGridNode(AEPartLocation.INTERNAL);
         if (node != null && node.isActive() && node.getGrid() != null) {
             node.getGrid().postEvent(new MENetworkCraftingPatternChange(this, node));
+            return true;
         }
+        return false;
     }
 
     @Override public int getSizeInventory() { return PATTERN_SLOTS; }
@@ -252,7 +309,7 @@ public class TileSupremeInterface extends TileEntity implements IInventory, IGri
         ItemStack taken = existing.splitStack(count);
         if (existing.isEmpty()) patterns.set(index, ItemStack.EMPTY);
         markDirty();
-        postPatternChange();
+        patternChangePending = !postPatternChange();
         return taken;
     }
 
@@ -261,7 +318,7 @@ public class TileSupremeInterface extends TileEntity implements IInventory, IGri
         ItemStack stack = patterns.get(index);
         patterns.set(index, ItemStack.EMPTY);
         markDirty();
-        postPatternChange();
+        patternChangePending = !postPatternChange();
         return stack;
     }
 
@@ -269,7 +326,7 @@ public class TileSupremeInterface extends TileEntity implements IInventory, IGri
     public void setInventorySlotContents(int index, ItemStack stack) {
         patterns.set(index, stack == null ? ItemStack.EMPTY : stack);
         markDirty();
-        postPatternChange();
+        patternChangePending = !postPatternChange();
     }
 
     @Override public String getName() { return "container.supreme_crafting.supreme_interface"; }
@@ -289,7 +346,7 @@ public class TileSupremeInterface extends TileEntity implements IInventory, IGri
             patterns.set(i, ItemStack.EMPTY);
         }
         markDirty();
-        postPatternChange();
+        patternChangePending = !postPatternChange();
     }
 
     @Override
@@ -311,6 +368,7 @@ public class TileSupremeInterface extends TileEntity implements IInventory, IGri
         readFixedList(compound.getTagList("Patterns", 10), patterns);
         pendingOutputs.clear();
         readGrowList(compound.getTagList("PendingOutputs", 10), pendingOutputs);
+        patternChangePending = !isEmpty();
     }
 
     private static NBTTagList writeList(List<ItemStack> stacks) {
@@ -385,6 +443,30 @@ public class TileSupremeInterface extends TileEntity implements IInventory, IGri
         @Nonnull
         public <T> Optional<T> context(@Nonnull Class<T> key) {
             return Optional.empty();
+        }
+    }
+
+    private static final class AssemblerProvider implements ICraftingProvider {
+        private final TileSupremeInterface owner;
+        private final BlockPos assemblerPos;
+
+        private AssemblerProvider(TileSupremeInterface owner, BlockPos assemblerPos) {
+            this.owner = owner;
+            this.assemblerPos = assemblerPos;
+        }
+
+        @Override
+        public void provideCrafting(ICraftingProviderHelper craftingTracker) {
+        }
+
+        @Override
+        public boolean pushPattern(ICraftingPatternDetails patternDetails, InventoryCrafting table) {
+            return owner.pushPatternTo(assemblerPos, patternDetails, table);
+        }
+
+        @Override
+        public boolean isBusy() {
+            return owner.isAssemblerBusy(assemblerPos);
         }
     }
 }
