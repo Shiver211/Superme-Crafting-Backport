@@ -52,15 +52,16 @@ public class SupremeJeiCategory implements IRecipeCategory<SupremeRecipeWrapper>
         int height = Math.max(1, wrapper.recipe().getHeight());
         int offsetX = wrapper.recipe().getOffsetX();
         int offsetY = wrapper.recipe().getOffsetY();
-        float cellSize = (float) GRID_SIZE / height;
+        float cellSize = Math.min((float) GRID_SIZE / width, (float) GRID_SIZE / height);
         float startX = (GRID_SIZE - width * cellSize) / 2.0F;
+        float startY = (GRID_SIZE - height * cellSize) / 2.0F;
         int slotSize = Math.max(1, Math.min(18, (int) Math.floor(cellSize)));
         IIngredientRenderer<ItemStack> inputRenderer = new ScaledItemRenderer(slotSize);
         List<Ingredient> recipeInputs = wrapper.recipe().getSupremeIngredients();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int sx = Math.round(startX + x * cellSize + (cellSize - slotSize) / 2.0F);
-                int sy = Math.round(y * cellSize + (cellSize - slotSize) / 2.0F);
+                int sy = Math.round(startY + y * cellSize + (cellSize - slotSize) / 2.0F);
                 int slot = SupremeTableInventory.indexOf(offsetX + x, offsetY + y);
                 recipeLayout.getItemStacks().init(slot, true, inputRenderer, sx, sy, slotSize, slotSize, 0, 0);
                 int ingredientIndex = x + y * width;

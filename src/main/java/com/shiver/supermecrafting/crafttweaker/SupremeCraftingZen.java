@@ -39,7 +39,7 @@ public final class SupremeCraftingZen {
     }
 
     @ZenMethod
-    public static void addShapedAt(String name, IItemStack output, int x, int y, IIngredient[][] pattern) {
+    public static void addShaped(String name, IItemStack output, int x, int y, IIngredient[][] pattern) {
         CraftTweakerAPI.apply(new AddRecipe(name, toShaped(output, x, y, pattern)));
     }
 
