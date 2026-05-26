@@ -37,4 +37,7 @@ dependencies {
     // JEI + CraftTweaker (local libs folder)
     compileOnly fileTree(dir: "${projectDir}/libs", include: ['*.jar'])
     runtimeOnly fileTree(dir: "${projectDir}/libs", include: ['*.jar'])
+
+    // Optional AE2 integration.
+    implementation rfg.deobf("curse.maven:ae2-extended-life-570458:6302098")
 }

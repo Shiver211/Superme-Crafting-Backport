@@ -1,8 +1,10 @@
 package com.shiver.supermecrafting.net;
 
+import com.shiver.supermecrafting.ae2.SupremeTableAe2Bridge;
 import com.shiver.supermecrafting.recipe.SupremeRecipe;
 import com.shiver.supermecrafting.table.ContainerSupremeTable;
 import com.shiver.supermecrafting.table.SupremeTableInventory;
+import com.shiver.supermecrafting.table.TileSupremeTable;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IInventory;
@@ -18,6 +20,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -31,6 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PacketTransferRecipe implements IMessage {
+    private static final String AE2_MOD_ID = "appliedenergistics2";
     private static final EnumFacing[] STORAGE_FACES = {
             EnumFacing.UP, EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.WEST, EnumFacing.EAST
     };
@@ -204,6 +208,10 @@ public class PacketTransferRecipe implements IMessage {
                     }
                 }
             }
+            TileSupremeTable table = supremeTable(player, tablePos);
+            if (table != null && isAe2Loaded()) {
+                SupremeTableAe2Bridge.addAvailable(table, stacks);
+            }
             return stacks;
         }
 
@@ -258,6 +266,10 @@ public class PacketTransferRecipe implements IMessage {
                 if (!fromInventory.isEmpty()) {
                     return fromInventory;
                 }
+            }
+            TileSupremeTable table = supremeTable(player, tablePos);
+            if (table != null && isAe2Loaded()) {
+                return SupremeTableAe2Bridge.takeOne(player, table, candidates, stackToFill);
             }
             return ItemStack.EMPTY;
         }
@@ -353,6 +365,15 @@ public class PacketTransferRecipe implements IMessage {
                 }
             }
             return false;
+        }
+
+        private static TileSupremeTable supremeTable(EntityPlayerMP player, BlockPos tablePos) {
+            TileEntity tile = player.world.getTileEntity(tablePos);
+            return tile instanceof TileSupremeTable ? (TileSupremeTable) tile : null;
+        }
+
+        private static boolean isAe2Loaded() {
+            return Loader.isModLoaded(AE2_MOD_ID);
         }
     }
 }

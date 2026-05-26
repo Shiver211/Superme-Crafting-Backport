@@ -1,19 +1,33 @@
 package com.shiver.supermecrafting.table;
 
+import appeng.api.networking.IGridHost;
+import appeng.api.networking.IGridNode;
+import appeng.api.networking.security.IActionHost;
+import appeng.api.util.AECableType;
+import appeng.api.util.AEPartLocation;
+import com.shiver.supermecrafting.ae2.SupremeTableAe2Bridge;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.Optional;
 
-public class TileSupremeTable extends TileEntity implements IInventory {
+@Optional.InterfaceList({
+        @Optional.Interface(iface = "appeng.api.networking.IGridHost", modid = "appliedenergistics2"),
+        @Optional.Interface(iface = "appeng.api.networking.security.IActionHost", modid = "appliedenergistics2")
+})
+public class TileSupremeTable extends TileEntity implements IInventory, IGridHost, IActionHost {
+    private static final String AE2_MOD_ID = "appliedenergistics2";
+
     private final SupremeTableInventory inventory = new SupremeTableInventory();
     private long modVersion;
+    private Object ae2Node;
+    private NBTTagCompound ae2NodeData;
 
     public SupremeTableInventory supremeInventory() {
         return inventory;
@@ -21,6 +35,22 @@ public class TileSupremeTable extends TileEntity implements IInventory {
 
     public long modVersion() {
         return modVersion;
+    }
+
+    public Object ae2Node() {
+        return ae2Node;
+    }
+
+    public void setAe2Node(Object ae2Node) {
+        this.ae2Node = ae2Node;
+    }
+
+    public NBTTagCompound ae2NodeData() {
+        return ae2NodeData;
+    }
+
+    public void setAe2NodeData(NBTTagCompound ae2NodeData) {
+        this.ae2NodeData = ae2NodeData;
     }
 
     @Override
@@ -128,6 +158,9 @@ public class TileSupremeTable extends TileEntity implements IInventory {
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         super.writeToNBT(compound);
         compound.setTag("Items", inventory.save());
+        if (isAe2Loaded()) {
+            SupremeTableAe2Bridge.writeNode(this, compound);
+        }
         return compound;
     }
 
@@ -135,6 +168,9 @@ public class TileSupremeTable extends TileEntity implements IInventory {
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
         inventory.load(compound.getTagList("Items", 10));
+        if (isAe2Loaded()) {
+            SupremeTableAe2Bridge.readNode(this, compound);
+        }
     }
 
     public void dropContents(World world, BlockPos pos) {
@@ -147,5 +183,59 @@ public class TileSupremeTable extends TileEntity implements IInventory {
         for (ItemStack stack : copy) {
             net.minecraft.inventory.InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), stack);
         }
+    }
+
+    @Override
+    public void validate() {
+        super.validate();
+        if (isAe2Loaded() && world != null && !world.isRemote) {
+            SupremeTableAe2Bridge.updateNode(this);
+        }
+    }
+
+    @Override
+    public void invalidate() {
+        if (isAe2Loaded()) {
+            SupremeTableAe2Bridge.destroyNode(this);
+        }
+        super.invalidate();
+    }
+
+    @Override
+    public void onChunkUnload() {
+        if (isAe2Loaded()) {
+            SupremeTableAe2Bridge.destroyNode(this);
+        }
+        super.onChunkUnload();
+    }
+
+    @Override
+    @Optional.Method(modid = AE2_MOD_ID)
+    public IGridNode getGridNode(AEPartLocation dir) {
+        return SupremeTableAe2Bridge.getGridNode(this);
+    }
+
+    @Override
+    @Optional.Method(modid = AE2_MOD_ID)
+    public AECableType getCableConnectionType(AEPartLocation dir) {
+        return SupremeTableAe2Bridge.getCableConnectionType(dir);
+    }
+
+    @Override
+    @Optional.Method(modid = AE2_MOD_ID)
+    public void securityBreak() {
+        if (world != null) {
+            world.destroyBlock(pos, true);
+        }
+    }
+
+    @Override
+    @Optional.Method(modid = AE2_MOD_ID)
+    public IGridNode getActionableNode() {
+        return SupremeTableAe2Bridge.getActionableNode(this);
+    }
+
+    private static boolean isAe2Loaded() {
+        return Loader.isModLoaded(AE2_MOD_ID);
     }
 }
