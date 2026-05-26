@@ -12,6 +12,8 @@ import net.minecraft.entity.player.EntityPlayer;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class SupremeJeiTransferHandler implements IRecipeTransferHandler<ContainerSupremeTable> {
@@ -25,24 +27,25 @@ public class SupremeJeiTransferHandler implements IRecipeTransferHandler<Contain
     public IRecipeTransferError transferRecipe(ContainerSupremeTable container, mezz.jei.api.gui.IRecipeLayout recipeLayout,
                                                EntityPlayer player, boolean maxTransfer, boolean doTransfer) {
         if (doTransfer) {
-            Map<Integer, String> targets = new HashMap<>();
+            Map<Integer, List<ItemStack>> targets = new HashMap<>();
             for (Map.Entry<Integer, ? extends IGuiIngredient<ItemStack>> entry
                     : recipeLayout.getItemStacks().getGuiIngredients().entrySet()) {
                 IGuiIngredient<ItemStack> ingredient = entry.getValue();
                 if (!ingredient.isInput()) continue;
-                ItemStack displayed = ingredient.getDisplayedIngredient();
-                if (displayed == null || displayed.isEmpty()) continue;
+                List<ItemStack> candidates = new ArrayList<>();
+                for (ItemStack stack : ingredient.getAllIngredients()) {
+                    if (stack != null && !stack.isEmpty()) {
+                        candidates.add(stack.copy());
+                    }
+                }
+                if (candidates.isEmpty()) continue;
                 int slot = entry.getKey();
                 if (slot >= 0 && slot < SupremeTableInventory.SIZE) {
-                    targets.put(slot, stackKey(displayed));
+                    targets.put(slot, candidates);
                 }
             }
-            SCNetwork.CHANNEL.sendToServer(new PacketTransferRecipe(targets));
+            SCNetwork.CHANNEL.sendToServer(new PacketTransferRecipe(targets, maxTransfer));
         }
         return null;
-    }
-
-    private static String stackKey(ItemStack stack) {
-        return stack.getItem().getRegistryName().toString() + "@" + stack.getMetadata();
     }
 }
