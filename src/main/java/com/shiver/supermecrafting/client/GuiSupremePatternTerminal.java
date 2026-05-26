@@ -13,11 +13,18 @@ import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
+import java.awt.Rectangle;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
 public class GuiSupremePatternTerminal extends GuiContainer {
     private static final ResourceLocation SLOT_TEXTURE = new ResourceLocation("textures/gui/container/generic_54.png");
+    private static final int PANEL_BG = 0xFFC6C6C6;
+    private static final int PANEL_LIGHT = 0xFFFFFFFF;
+    private static final int PANEL_DARK = 0xFF555555;
+    private static final int CANVAS_BG = 0xFF373737;
+    private static final int GRID_BORDER = 0xFFA0A0A0;
+    private static final int SLOT_BRIGHTEN = 0x30FFFFFF;
     private static final int CANVAS_PAD = 4;
     private static final int TITLE_HEIGHT = 17;
     private static final int CANVAS_HEIGHT = 220;
@@ -31,6 +38,14 @@ public class GuiSupremePatternTerminal extends GuiContainer {
     private static final double MAX_CELL = 36.0;
     private static final double ZOOM_STEP = 1.15;
     private static final double EDGE_PAD = 60.0;
+    private static final double NAV_PAD = 12.0;
+    private static final int GROUP_SIZE = 27;
+    private static final int QUICK_BUTTON = 20;
+    private static final int QUICK_GAP = 4;
+    private static final int MOVE_BUTTON = 20;
+    private static final int MOVE_GAP = 3;
+    private static final int GROUP_BUTTON_ID = 100;
+    private static final int MOVE_BUTTON_ID = 200;
 
     private double panOffsetX;
     private double panOffsetY;
@@ -54,6 +69,7 @@ public class GuiSupremePatternTerminal extends GuiContainer {
         panOffsetY = CanvasMath.clampPan(canvasHeight() / 2.0 - SupremeTableInventory.HEIGHT * cellSize / 2.0,
                 canvasHeight(), cellSize, SupremeTableInventory.HEIGHT, EDGE_PAD);
         buttonList.add(new GuiButton(ENCODE_BUTTON_ID, guiLeft + 320, guiTop + 96, 30, 20, "=>"));
+        initNavigationButtons();
     }
 
     private int canvasWidth() {
@@ -131,24 +147,40 @@ public class GuiSupremePatternTerminal extends GuiContainer {
             ViewportSlot.setSuppressRender(false);
         }
         drawScaledGridContents(mouseX, mouseY);
+        drawCanvasStackTooltip(mouseX, mouseY);
         renderHoveredToolTip(mouseX, mouseY);
     }
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
-        drawRect(guiLeft, guiTop, guiLeft + xSize, guiTop + ySize, 0xFFC6C6C6);
-        drawRect(guiLeft + CANVAS_PAD, guiTop + TITLE_HEIGHT,
-                guiLeft + CANVAS_PAD + canvasWidth(), guiTop + TITLE_HEIGHT + canvasHeight(), 0xFF373737);
-        renderGridChrome();
-        drawSlotSprites();
-    }
+        drawRect(guiLeft, guiTop, guiLeft + xSize, guiTop + ySize, PANEL_BG);
+        drawRect(guiLeft, guiTop, guiLeft + xSize, guiTop + 1, PANEL_LIGHT);
+        drawRect(guiLeft, guiTop, guiLeft + 1, guiTop + ySize, PANEL_LIGHT);
+        drawRect(guiLeft, guiTop + ySize - 1, guiLeft + xSize, guiTop + ySize, PANEL_DARK);
+        drawRect(guiLeft + xSize - 1, guiTop, guiLeft + xSize, guiTop + ySize, PANEL_DARK);
 
-    private void renderGridChrome() {
         int cl = guiLeft + CANVAS_PAD;
         int ct = guiTop + TITLE_HEIGHT;
         int cr = cl + canvasWidth();
         int cb = ct + canvasHeight();
+        drawRect(cl, ct, cr, cb, CANVAS_BG);
+
+        renderGridChrome(cl, ct, cr, cb);
+        drawSlotSprites();
+    }
+
+    private void renderGridChrome(int cl, int ct, int cr, int cb) {
         enableScissor(cl, ct, cr, cb);
+        GlStateManager.disableTexture2D();
+        int left = guiLeft + gridLineX(0);
+        int top = guiTop + gridLineY(0);
+        int right = guiLeft + gridLineX(SupremeTableInventory.WIDTH);
+        int bottom = guiTop + gridLineY(SupremeTableInventory.HEIGHT);
+        drawRect(left - 2, top - 2, right + 2, top, GRID_BORDER);
+        drawRect(left - 2, bottom, right + 2, bottom + 2, GRID_BORDER);
+        drawRect(left - 2, top, left, bottom, GRID_BORDER);
+        drawRect(right, top, right + 2, bottom, GRID_BORDER);
+        GlStateManager.enableTexture2D();
         drawCanvasSlotSprites();
         disableScissor();
     }
@@ -160,9 +192,13 @@ public class GuiSupremePatternTerminal extends GuiContainer {
         int lastY = Math.min(SupremeTableInventory.HEIGHT - 1, (int) Math.ceil((canvasHeight() - panOffsetY) / cellSize));
         mc.getTextureManager().bindTexture(SLOT_TEXTURE);
         for (int y = firstY; y <= lastY; y++) {
+            int sy = guiTop + gridLineY(y);
+            int height = Math.max(1, cellHeight(y));
             for (int x = firstX; x <= lastX; x++) {
-                drawScaledCustomSizeModalRect(guiLeft + gridLineX(x), guiTop + gridLineY(y),
-                        7, 17, 18, 18, Math.max(1, cellWidth(x)), Math.max(1, cellHeight(y)), 256, 256);
+                int sx = guiLeft + gridLineX(x);
+                int width = Math.max(1, cellWidth(x));
+                drawScaledCustomSizeModalRect(sx, sy, 7, 17, 18, 18, width, height, 256, 256);
+                drawRect(sx + 1, sy + 1, sx + width - 1, sy + height - 1, SLOT_BRIGHTEN);
             }
         }
     }
@@ -172,6 +208,56 @@ public class GuiSupremePatternTerminal extends GuiContainer {
         for (int i = SupremeTableInventory.SIZE; i < inventorySlots.inventorySlots.size(); i++) {
             Slot slot = inventorySlots.inventorySlots.get(i);
             drawTexturedModalRect(guiLeft + slot.xPos - 1, guiTop + slot.yPos - 1, 7, 17, 18, 18);
+            drawRect(guiLeft + slot.xPos, guiTop + slot.yPos, guiLeft + slot.xPos + 16, guiTop + slot.yPos + 16, SLOT_BRIGHTEN);
+        }
+    }
+
+    private Rectangle groupButtonBounds(int index) {
+        int col = index % 3;
+        int row = index / 3;
+        int total = QUICK_BUTTON * 3 + QUICK_GAP * 2;
+        int invLeft = guiLeft + (xSize - 9 * 18) / 2;
+        int leftSpace = invLeft - guiLeft;
+        int startX = guiLeft + Math.max(8, (leftSpace - total) / 2);
+        int startY = guiTop + TITLE_HEIGHT + CANVAS_HEIGHT + PLAYER_INV_GAP + 3;
+        return new Rectangle(startX + col * (QUICK_BUTTON + QUICK_GAP),
+                startY + row * (QUICK_BUTTON + QUICK_GAP), QUICK_BUTTON, QUICK_BUTTON);
+    }
+
+    private Rectangle moveButtonBounds(int direction) {
+        int invLeft = guiLeft + (xSize - 9 * 18) / 2;
+        int invRight = invLeft + 9 * 18;
+        int centerX = invRight + (guiLeft + xSize - invRight) / 2;
+        Rectangle firstGroupButton = groupButtonBounds(0);
+        int groupHeight = QUICK_BUTTON * 3 + QUICK_GAP * 2;
+        int centerY = firstGroupButton.y + groupHeight / 2;
+        int step = MOVE_BUTTON + MOVE_GAP;
+        int x = centerX - MOVE_BUTTON / 2;
+        int y = centerY - MOVE_BUTTON / 2;
+        if (direction == 0) y -= step;
+        if (direction == 1) x -= step;
+        if (direction == 2) x += step;
+        if (direction == 3) y += step;
+        return new Rectangle(x, y, MOVE_BUTTON, MOVE_BUTTON);
+    }
+
+    private String directionLabel(int direction) {
+        if (direction == 0) return "^";
+        if (direction == 1) return "<";
+        if (direction == 2) return ">";
+        return "v";
+    }
+
+    private void initNavigationButtons() {
+        for (int i = 0; i < 9; i++) {
+            Rectangle bounds = groupButtonBounds(i);
+            buttonList.add(new GuiButton(GROUP_BUTTON_ID + i, bounds.x, bounds.y, bounds.width, bounds.height,
+                    String.valueOf(i + 1)));
+        }
+        for (int i = 0; i < 4; i++) {
+            Rectangle bounds = moveButtonBounds(i);
+            buttonList.add(new GuiButton(MOVE_BUTTON_ID + i, bounds.x, bounds.y, bounds.width, bounds.height,
+                    directionLabel(i)));
         }
     }
 
@@ -192,23 +278,96 @@ public class GuiSupremePatternTerminal extends GuiContainer {
         }
         GlStateManager.disableLighting();
         GlStateManager.disableDepth();
+        Slot hover = gridStackAt(mouseX, mouseY);
+        if (hover != null) {
+            int gx = SupremeTableInventory.xOf(hover.slotNumber);
+            int gy = SupremeTableInventory.yOf(hover.slotNumber);
+            Rectangle bounds = stackBounds(guiLeft + hover.xPos, guiTop + hover.yPos, cellWidth(gx), cellHeight(gy));
+            drawGradientRect(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height, -2130706433, -2130706433);
+        }
         disableScissor();
         RenderHelper.disableStandardItemLighting();
     }
 
+    @Override
+    protected boolean isPointInRegion(int left, int top, int right, int bottom, int pointX, int pointY) {
+        if (left == OFFSCREEN || top == OFFSCREEN) {
+            return false;
+        }
+        int gx = gridXFromSlotLeft(left);
+        int gy = gridYFromSlotTop(top);
+        if (gx >= 0 && gy >= 0 && gx < SupremeTableInventory.WIDTH && gy < SupremeTableInventory.HEIGHT
+                && gridLineX(gx) == left && gridLineY(gy) == top) {
+            int px = pointX - guiLeft;
+            int py = pointY - guiTop;
+            return inCanvas(pointX, pointY)
+                    && px >= left
+                    && px < left + cellWidth(gx)
+                    && py >= top
+                    && py < top + cellHeight(gy);
+        }
+        return super.isPointInRegion(left, top, right, bottom, pointX, pointY);
+    }
+
+    private int gridXFromSlotLeft(int left) {
+        return (int) Math.round((left - CANVAS_PAD - panOffsetX) / cellSize);
+    }
+
+    private int gridYFromSlotTop(int top) {
+        return (int) Math.round((top - TITLE_HEIGHT - panOffsetY) / cellSize);
+    }
+
+    private Slot gridSlotAt(int mouseX, int mouseY) {
+        if (!inCanvas(mouseX, mouseY)) return null;
+        int relX = mouseX - guiLeft - CANVAS_PAD;
+        int relY = mouseY - guiTop - TITLE_HEIGHT;
+        int gx = (int) Math.floor((relX - panOffsetX) / cellSize);
+        int gy = (int) Math.floor((relY - panOffsetY) / cellSize);
+        if (gx < 0 || gy < 0 || gx >= SupremeTableInventory.WIDTH || gy >= SupremeTableInventory.HEIGHT) return null;
+        Slot slot = inventorySlots.inventorySlots.get(SupremeTableInventory.indexOf(gx, gy));
+        return slot.xPos == OFFSCREEN || slot.yPos == OFFSCREEN ? null : slot;
+    }
+
+    private Slot gridStackAt(int mouseX, int mouseY) {
+        Slot slot = gridSlotAt(mouseX, mouseY);
+        if (slot == null || !slot.getHasStack()) return null;
+        int gx = SupremeTableInventory.xOf(slot.slotNumber);
+        int gy = SupremeTableInventory.yOf(slot.slotNumber);
+        Rectangle bounds = stackBounds(guiLeft + slot.xPos, guiTop + slot.yPos, cellWidth(gx), cellHeight(gy));
+        return bounds.contains(mouseX, mouseY) ? slot : null;
+    }
+
+    private void drawCanvasStackTooltip(int mouseX, int mouseY) {
+        Slot hover = gridStackAt(mouseX, mouseY);
+        if (mc.player.inventory.getItemStack().isEmpty() && hover != null) {
+            renderToolTip(hover.getStack(), mouseX, mouseY);
+        }
+    }
+
     private void drawScaledStack(ItemStack stack, int x, int y, int cellW, int cellH) {
         if (stack.isEmpty()) return;
-        float scale = Math.max(0.25F, Math.min(cellW, cellH) / 18.0F);
-        int size = Math.max(1, Math.round(16.0F * scale));
-        int drawX = Math.round(x + (cellW - size) / 2.0F);
-        int drawY = Math.round(y + (cellH - size) / 2.0F);
+        float scale = stackScale(cellW, cellH);
+        Rectangle bounds = stackBounds(x, y, cellW, cellH);
         GlStateManager.pushMatrix();
-        GlStateManager.translate(drawX, drawY, 100.0F);
+        GlStateManager.translate(bounds.x, bounds.y, 100.0F);
         GlStateManager.scale(scale, scale, 1.0F);
         itemRender.zLevel = 100.0F;
         itemRender.renderItemAndEffectIntoGUI(mc.player, stack, 0, 0);
+        itemRender.renderItemOverlayIntoGUI(fontRenderer, stack, 0, 0, null);
         itemRender.zLevel = 0.0F;
         GlStateManager.popMatrix();
+    }
+
+    private float stackScale(int cellW, int cellH) {
+        return Math.max(0.25F, Math.min(cellW, cellH) / 18.0F);
+    }
+
+    private Rectangle stackBounds(int x, int y, int cellW, int cellH) {
+        float scale = stackScale(cellW, cellH);
+        int size = Math.max(1, Math.round(16.0F * scale));
+        int drawX = Math.round(x + (cellW - size) / 2.0F);
+        int drawY = Math.round(y + (cellH - size) / 2.0F);
+        return new Rectangle(drawX, drawY, size, size);
     }
 
     private void enableScissor(int left, int top, int right, int bottom) {
@@ -226,6 +385,15 @@ public class GuiSupremePatternTerminal extends GuiContainer {
 
     @Override
     protected void actionPerformed(GuiButton button) throws IOException {
+        if (button.id >= GROUP_BUTTON_ID && button.id < GROUP_BUTTON_ID + 9) {
+            int group = button.id - GROUP_BUTTON_ID;
+            centerGroup(group % 3, group / 3);
+            return;
+        }
+        if (button.id >= MOVE_BUTTON_ID && button.id < MOVE_BUTTON_ID + 4) {
+            moveView(button.id - MOVE_BUTTON_ID);
+            return;
+        }
         if (button.id == ENCODE_BUTTON_ID) {
             sendEncode();
             return;
@@ -241,6 +409,30 @@ public class GuiSupremePatternTerminal extends GuiContainer {
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("Failed to send encode packet", e);
         }
+    }
+
+    private void centerGroup(int groupX, int groupY) {
+        double availableWidth = Math.max(1.0, canvasWidth() - NAV_PAD * 2.0);
+        double availableHeight = Math.max(1.0, canvasHeight() - NAV_PAD * 2.0);
+        cellSize = Math.min(MAX_CELL, Math.min(availableWidth, availableHeight) / (double) GROUP_SIZE);
+        centerOnGrid(groupX * GROUP_SIZE + GROUP_SIZE / 2.0, groupY * GROUP_SIZE + GROUP_SIZE / 2.0, NAV_PAD);
+    }
+
+    private void moveView(int direction) {
+        double centerX = (canvasWidth() / 2.0 - panOffsetX) / cellSize;
+        double centerY = (canvasHeight() / 2.0 - panOffsetY) / cellSize;
+        if (direction == 0) centerY -= 1.0;
+        if (direction == 1) centerX -= 1.0;
+        if (direction == 2) centerX += 1.0;
+        if (direction == 3) centerY += 1.0;
+        centerOnGrid(centerX, centerY, NAV_PAD);
+    }
+
+    private void centerOnGrid(double gridX, double gridY, double edgePad) {
+        panOffsetX = CanvasMath.clampPan(canvasWidth() / 2.0 - gridX * cellSize,
+                canvasWidth(), cellSize, SupremeTableInventory.WIDTH, edgePad);
+        panOffsetY = CanvasMath.clampPan(canvasHeight() / 2.0 - gridY * cellSize,
+                canvasHeight(), cellSize, SupremeTableInventory.HEIGHT, edgePad);
     }
 
     @Override
