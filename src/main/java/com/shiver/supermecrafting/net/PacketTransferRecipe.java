@@ -1,5 +1,6 @@
 package com.shiver.supermecrafting.net;
 
+import com.shiver.supermecrafting.recipe.SupremeRecipe;
 import com.shiver.supermecrafting.table.ContainerSupremeTable;
 import com.shiver.supermecrafting.table.SupremeTableInventory;
 import io.netty.buffer.ByteBuf;
@@ -7,8 +8,11 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
@@ -18,6 +22,7 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.ArrayList;
@@ -30,46 +35,27 @@ public class PacketTransferRecipe implements IMessage {
             EnumFacing.UP, EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.WEST, EnumFacing.EAST
     };
 
-    private final Map<Integer, List<ItemStack>> targets = new HashMap<>();
+    private ResourceLocation recipeId;
     private boolean maxTransfer;
 
     public PacketTransferRecipe() {
     }
 
-    public PacketTransferRecipe(Map<Integer, List<ItemStack>> targets, boolean maxTransfer) {
-        this.targets.putAll(targets);
+    public PacketTransferRecipe(ResourceLocation recipeId, boolean maxTransfer) {
+        this.recipeId = recipeId;
         this.maxTransfer = maxTransfer;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
         maxTransfer = buf.readBoolean();
-        int count = buf.readInt();
-        for (int i = 0; i < count; i++) {
-            int slot = buf.readInt();
-            int candidateCount = buf.readInt();
-            List<ItemStack> candidates = new ArrayList<>();
-            for (int candidate = 0; candidate < candidateCount; candidate++) {
-                ItemStack stack = ByteBufUtils.readItemStack(buf);
-                if (!stack.isEmpty()) {
-                    candidates.add(stack);
-                }
-            }
-            targets.put(slot, candidates);
-        }
+        recipeId = new ResourceLocation(ByteBufUtils.readUTF8String(buf));
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeBoolean(maxTransfer);
-        buf.writeInt(targets.size());
-        for (Map.Entry<Integer, List<ItemStack>> entry : targets.entrySet()) {
-            buf.writeInt(entry.getKey());
-            buf.writeInt(entry.getValue().size());
-            for (ItemStack stack : entry.getValue()) {
-                ByteBufUtils.writeItemStack(buf, stack);
-            }
-        }
+        ByteBufUtils.writeUTF8String(buf, recipeId.toString());
     }
 
     public static class Handler implements IMessageHandler<PacketTransferRecipe, IMessage> {
@@ -77,12 +63,14 @@ public class PacketTransferRecipe implements IMessage {
         public IMessage onMessage(PacketTransferRecipe message, MessageContext ctx) {
             EntityPlayerMP player = ctx.getServerHandler().player;
             FMLCommonHandler.instance().getMinecraftServerInstance()
-                    .addScheduledTask(() -> transfer(player, message.targets, message.maxTransfer));
+                    .addScheduledTask(() -> transfer(player, message.recipeId, message.maxTransfer));
             return null;
         }
 
-        private static void transfer(EntityPlayerMP player, Map<Integer, List<ItemStack>> targets, boolean maxTransfer) {
+        private static void transfer(EntityPlayerMP player, ResourceLocation recipeId, boolean maxTransfer) {
             if (!(player.openContainer instanceof ContainerSupremeTable)) return;
+            Map<Integer, List<ItemStack>> targets = targets(recipeId);
+            if (targets.isEmpty()) return;
             ContainerSupremeTable container = (ContainerSupremeTable) player.openContainer;
             if (maxTransfer) {
                 while (true) {
@@ -105,6 +93,41 @@ public class PacketTransferRecipe implements IMessage {
                 }
             }
             container.detectAndSendChanges();
+        }
+
+        private static Map<Integer, List<ItemStack>> targets(ResourceLocation recipeId) {
+            Map<Integer, List<ItemStack>> targets = new HashMap<>();
+            IRecipe recipe = ForgeRegistries.RECIPES.getValue(recipeId);
+            if (!(recipe instanceof SupremeRecipe)) {
+                return targets;
+            }
+            SupremeRecipe supremeRecipe = (SupremeRecipe) recipe;
+            int width = Math.max(1, supremeRecipe.getWidth());
+            int height = Math.max(1, supremeRecipe.getHeight());
+            List<Ingredient> ingredients = supremeRecipe.getSupremeIngredients();
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    int ingredientIndex = x + y * width;
+                    if (ingredientIndex >= ingredients.size()) {
+                        continue;
+                    }
+                    List<ItemStack> candidates = candidates(ingredients.get(ingredientIndex));
+                    if (!candidates.isEmpty()) {
+                        targets.put(SupremeTableInventory.indexOf(x, y), candidates);
+                    }
+                }
+            }
+            return targets;
+        }
+
+        private static List<ItemStack> candidates(Ingredient ingredient) {
+            List<ItemStack> candidates = new ArrayList<>();
+            for (ItemStack stack : ingredient.getMatchingStacks()) {
+                if (!stack.isEmpty()) {
+                    candidates.add(stack);
+                }
+            }
+            return candidates;
         }
 
         private static boolean transferOne(ContainerSupremeTable container, EntityPlayerMP player, int slot,
