@@ -4,9 +4,7 @@ import com.shiver.supermecrafting.recipe.SupremeRecipe;
 import mezz.jei.api.ingredients.IIngredients;
 import mezz.jei.api.recipe.IRecipeWrapper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.Ingredient;
 
@@ -15,20 +13,26 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SupremeRecipeWrapper implements IRecipeWrapper {
-    private static final int ITEM_STEP = 20;
     private static final int TEXT_COLOR = 0xFF404040;
+    private static final int DISABLED_TEXT_COLOR = 0xFF808080;
     private static final int PAGE_BUTTON_W = 12;
     private static final int PAGE_BUTTON_H = 12;
     private static final int PAGE_GAP = 2;
     private static final int PAGE_NEXT_X = SupremeJeiCategory.MATERIAL_X + SupremeJeiCategory.MATERIAL_W - PAGE_BUTTON_W - 2;
     private static final int PAGE_PREV_X = PAGE_NEXT_X - PAGE_BUTTON_W - PAGE_GAP;
     private static final int PAGE_BUTTON_Y = SupremeJeiCategory.MATERIAL_Y + SupremeJeiCategory.MATERIAL_H - PAGE_BUTTON_H - 2;
+    private static final int TEXT_X = SupremeJeiCategory.MATERIAL_X + 2;
+    private static final int TEXT_Y = SupremeJeiCategory.MATERIAL_Y + 3;
+    private static final int LINE_HEIGHT = 10;
+    private static final int MATERIAL_PAGE_SIZE = Math.max(1, (SupremeJeiCategory.MATERIAL_H - 6) / LINE_HEIGHT);
 
     private final SupremeRecipe recipe;
+    private final List<MaterialEntry> materials;
     private int materialPage;
 
     public SupremeRecipeWrapper(SupremeRecipe recipe) {
         this.recipe = recipe;
+        this.materials = createMaterials();
     }
 
     public SupremeRecipe recipe() {
@@ -47,11 +51,7 @@ public class SupremeRecipeWrapper implements IRecipeWrapper {
 
     @Override
     public void drawInfo(Minecraft minecraft, int recipeWidth, int recipeHeight, int mouseX, int mouseY) {
-        List<MaterialEntry> materials = materials();
-        int columns = Math.max(1, SupremeJeiCategory.MATERIAL_W / ITEM_STEP);
-        int visibleRows = Math.max(1, SupremeJeiCategory.MATERIAL_H / ITEM_STEP);
-        int pageSize = columns * visibleRows;
-        int maxPage = Math.max(0, (materials.size() + pageSize - 1) / pageSize - 1);
+        int maxPage = maxPage();
         materialPage = Math.max(0, Math.min(materialPage, maxPage));
 
         minecraft.fontRenderer.drawString("Materials", SupremeJeiCategory.MATERIAL_X,
@@ -64,59 +64,23 @@ public class SupremeRecipeWrapper implements IRecipeWrapper {
         drawPageButton(minecraft, mouseX, mouseY, PAGE_PREV_X, PAGE_BUTTON_Y, "<", materialPage > 0);
         drawPageButton(minecraft, mouseX, mouseY, PAGE_NEXT_X, PAGE_BUTTON_Y, ">", materialPage < maxPage);
 
-        RenderHelper.enableGUIStandardItemLighting();
-        GlStateManager.enableDepth();
-        GlStateManager.pushMatrix();
-        for (int i = materialPage * pageSize; i < materials.size(); i++) {
-            int visibleIndex = i - materialPage * pageSize;
-            int row = visibleIndex / columns;
-            if (row >= visibleRows) {
+        for (int i = materialPage * MATERIAL_PAGE_SIZE; i < materials.size(); i++) {
+            int visibleIndex = i - materialPage * MATERIAL_PAGE_SIZE;
+            if (visibleIndex >= MATERIAL_PAGE_SIZE) {
                 break;
             }
-            int col = visibleIndex % columns;
-            int x = SupremeJeiCategory.MATERIAL_X + col * ITEM_STEP;
-            int y = SupremeJeiCategory.MATERIAL_Y + row * ITEM_STEP;
             MaterialEntry entry = materials.get(i);
-            minecraft.getRenderItem().renderItemAndEffectIntoGUI(entry.stack, x, y);
-            minecraft.getRenderItem().renderItemOverlayIntoGUI(minecraft.fontRenderer, entry.stack, x, y,
-                    entry.count > 1 ? String.valueOf(entry.count) : null);
+            minecraft.fontRenderer.drawString(entry.label, TEXT_X, TEXT_Y + visibleIndex * LINE_HEIGHT, TEXT_COLOR);
         }
-        GlStateManager.popMatrix();
-        GlStateManager.disableLighting();
-        GlStateManager.disableDepth();
-        RenderHelper.disableStandardItemLighting();
     }
 
     private void drawPageButton(Minecraft minecraft, int mouseX, int mouseY, int x, int y, String label, boolean enabled) {
-        GuiButton button = new GuiButton(0, x, y, PAGE_BUTTON_W, PAGE_BUTTON_H, label);
-        button.enabled = enabled;
-        button.drawButton(minecraft, mouseX, mouseY, 0.0F);
-    }
-
-    @Override
-    public List<String> getTooltipStrings(int mouseX, int mouseY) {
-        MaterialEntry entry = hoveredMaterial(mouseX, mouseY);
-        if (entry == null) {
-            return java.util.Collections.emptyList();
-        }
-        return entry.tooltip();
-    }
-
-    private MaterialEntry hoveredMaterial(int mouseX, int mouseY) {
-        if (!isInMaterialArea(mouseX, mouseY)) {
-            return null;
-        }
-        List<MaterialEntry> materials = materials();
-        int columns = Math.max(1, SupremeJeiCategory.MATERIAL_W / ITEM_STEP);
-        int visibleRows = Math.max(1, SupremeJeiCategory.MATERIAL_H / ITEM_STEP);
-        int pageSize = columns * visibleRows;
-        int col = (mouseX - SupremeJeiCategory.MATERIAL_X) / ITEM_STEP;
-        int row = (mouseY - SupremeJeiCategory.MATERIAL_Y) / ITEM_STEP;
-        if (col >= columns || row >= visibleRows) {
-            return null;
-        }
-        int index = materialPage * pageSize + row * columns + col;
-        return index >= 0 && index < materials.size() ? materials.get(index) : null;
+        boolean hovered = enabled && inRect(mouseX, mouseY, x, y, PAGE_BUTTON_W, PAGE_BUTTON_H);
+        Gui.drawRect(x, y, x + PAGE_BUTTON_W, y + PAGE_BUTTON_H, enabled ? 0xFF606060 : 0xFF9A9A9A);
+        Gui.drawRect(x + 1, y + 1, x + PAGE_BUTTON_W - 1, y + PAGE_BUTTON_H - 1,
+                hovered ? 0xFFE0E0E0 : 0xFFC6C6C6);
+        int textX = x + (PAGE_BUTTON_W - minecraft.fontRenderer.getStringWidth(label)) / 2;
+        minecraft.fontRenderer.drawString(label, textX, y + 2, enabled ? TEXT_COLOR : DISABLED_TEXT_COLOR);
     }
 
     @Override
@@ -124,11 +88,7 @@ public class SupremeRecipeWrapper implements IRecipeWrapper {
         if (mouseButton != 0) {
             return false;
         }
-        List<MaterialEntry> materials = materials();
-        int columns = Math.max(1, SupremeJeiCategory.MATERIAL_W / ITEM_STEP);
-        int visibleRows = Math.max(1, SupremeJeiCategory.MATERIAL_H / ITEM_STEP);
-        int pageSize = columns * visibleRows;
-        int maxPage = Math.max(0, (materials.size() + pageSize - 1) / pageSize - 1);
+        int maxPage = maxPage();
         if (inRect(mouseX, mouseY, PAGE_PREV_X, PAGE_BUTTON_Y, PAGE_BUTTON_W, PAGE_BUTTON_H) && materialPage > 0) {
             materialPage--;
             return true;
@@ -144,14 +104,11 @@ public class SupremeRecipeWrapper implements IRecipeWrapper {
         return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
     }
 
-    private boolean isInMaterialArea(int mouseX, int mouseY) {
-        return mouseX >= SupremeJeiCategory.MATERIAL_X
-                && mouseX < SupremeJeiCategory.MATERIAL_X + SupremeJeiCategory.MATERIAL_W
-                && mouseY >= SupremeJeiCategory.MATERIAL_Y
-                && mouseY < SupremeJeiCategory.MATERIAL_Y + SupremeJeiCategory.MATERIAL_H;
+    private int maxPage() {
+        return Math.max(0, (materials.size() + MATERIAL_PAGE_SIZE - 1) / MATERIAL_PAGE_SIZE - 1);
     }
 
-    private List<MaterialEntry> materials() {
+    private List<MaterialEntry> createMaterials() {
         List<MaterialEntry> materials = new ArrayList<>();
         for (Ingredient ingredient : recipe.getSupremeIngredients()) {
             ItemStack[] stacks = ingredient.getMatchingStacks();
@@ -164,7 +121,7 @@ public class SupremeRecipeWrapper implements IRecipeWrapper {
             if (existing == null) {
                 materials.add(new MaterialEntry(display, 1));
             } else {
-                existing.count++;
+                existing.grow();
             }
         }
         return materials;
@@ -172,8 +129,8 @@ public class SupremeRecipeWrapper implements IRecipeWrapper {
 
     private MaterialEntry findMaterial(List<MaterialEntry> materials, ItemStack stack) {
         for (MaterialEntry entry : materials) {
-            if (ItemStack.areItemsEqual(entry.stack, stack)
-                    && ItemStack.areItemStackTagsEqual(entry.stack, stack)) {
+            if (ItemStack.areItemsEqual(entry.matchStack, stack)
+                    && ItemStack.areItemStackTagsEqual(entry.matchStack, stack)) {
                 return entry;
             }
         }
@@ -181,22 +138,25 @@ public class SupremeRecipeWrapper implements IRecipeWrapper {
     }
 
     private static final class MaterialEntry {
-        private final ItemStack stack;
+        private final ItemStack matchStack;
+        private final String name;
         private int count;
-        private List<String> tooltip;
+        private String label;
 
         private MaterialEntry(ItemStack stack, int count) {
-            this.stack = stack;
+            this.matchStack = stack;
+            this.name = stack.getDisplayName();
             this.count = count;
+            updateLabel();
         }
 
-        private List<String> tooltip() {
-            if (tooltip == null) {
-                tooltip = new ArrayList<>();
-                tooltip.add(stack.getDisplayName());
-                tooltip.add("x" + count);
-            }
-            return tooltip;
+        private void grow() {
+            count++;
+            updateLabel();
+        }
+
+        private void updateLabel() {
+            label = name + " x" + count;
         }
     }
 }
