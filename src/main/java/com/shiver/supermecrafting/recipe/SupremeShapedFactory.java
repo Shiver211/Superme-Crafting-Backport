@@ -20,8 +20,13 @@ public class SupremeShapedFactory implements IRecipeFactory {
     public IRecipe parse(JsonContext context, JsonObject json) {
         String[] pattern = pattern(JsonUtils.getJsonArray(json, "pattern"));
         Map<Character, Ingredient> key = key(context, JsonUtils.getJsonObject(json, "key"));
+        int offsetX = JsonUtils.getInt(json, "x", 0);
+        int offsetY = JsonUtils.getInt(json, "y", 0);
         int width = pattern[0].length();
         int height = pattern.length;
+        if (offsetX < 0 || offsetY < 0 || offsetX + width > 81 || offsetY + height > 81) {
+            throw new JsonSyntaxException("Pattern is outside the 81x81 supreme table");
+        }
         NonNullList<Ingredient> ingredients = NonNullList.withSize(width * height, Ingredient.EMPTY);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -30,7 +35,7 @@ public class SupremeShapedFactory implements IRecipeFactory {
             }
         }
         ItemStack result = CraftingHelper.getItemStack(JsonUtils.getJsonObject(json, "result"), context);
-        return new SupremeShapedRecipe(width, height, ingredients, result);
+        return new SupremeShapedRecipe(offsetX, offsetY, width, height, ingredients, result);
     }
 
     private static String[] pattern(JsonArray array) {

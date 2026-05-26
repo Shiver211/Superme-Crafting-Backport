@@ -25,6 +25,14 @@ public abstract class SupremeRecipe extends IForgeRegistryEntry.Impl<IRecipe> im
 
     public abstract int getHeight();
 
+    public int getOffsetX() {
+        return 0;
+    }
+
+    public int getOffsetY() {
+        return 0;
+    }
+
     @Override
     public boolean matches(InventoryCrafting inv, World worldIn) {
         return false;

@@ -29,6 +29,8 @@ public final class AE2PatternTerminalTransferBridge {
         SupremeRecipe supremeRecipe = (SupremeRecipe) recipe;
         int width = Math.max(1, supremeRecipe.getWidth());
         int height = Math.max(1, supremeRecipe.getHeight());
+        int offsetX = supremeRecipe.getOffsetX();
+        int offsetY = supremeRecipe.getOffsetY();
         List<Ingredient> ingredients = supremeRecipe.getSupremeIngredients();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -40,7 +42,7 @@ public final class AE2PatternTerminalTransferBridge {
                 if (stacks.length > 0 && !stacks[0].isEmpty()) {
                     ItemStack ghost = stacks[0].copy();
                     ghost.setCount(1);
-                    terminal.setInventorySlotContents(SupremeTableInventory.indexOf(x, y), ghost);
+                    terminal.setInventorySlotContents(SupremeTableInventory.indexOf(offsetX + x, offsetY + y), ghost);
                 }
             }
         }

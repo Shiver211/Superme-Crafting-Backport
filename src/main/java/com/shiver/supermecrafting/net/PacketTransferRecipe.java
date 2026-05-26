@@ -121,6 +121,8 @@ public class PacketTransferRecipe implements IMessage {
             SupremeRecipe supremeRecipe = (SupremeRecipe) recipe;
             int width = Math.max(1, supremeRecipe.getWidth());
             int height = Math.max(1, supremeRecipe.getHeight());
+            int offsetX = supremeRecipe.getOffsetX();
+            int offsetY = supremeRecipe.getOffsetY();
             List<Ingredient> ingredients = supremeRecipe.getSupremeIngredients();
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
@@ -130,7 +132,7 @@ public class PacketTransferRecipe implements IMessage {
                     }
                     List<ItemStack> candidates = candidates(ingredients.get(ingredientIndex));
                     if (!candidates.isEmpty()) {
-                        targets.put(SupremeTableInventory.indexOf(x, y), candidates);
+                        targets.put(SupremeTableInventory.indexOf(offsetX + x, offsetY + y), candidates);
                     }
                 }
             }

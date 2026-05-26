@@ -30,11 +30,6 @@ public final class SupremeCraftingZen {
         CraftTweakerAPI.apply(new AddRecipe(name, toShapeless(output, ingredients)));
     }
 
-    @ZenMethod
-    public static void addShaped(String name, IItemStack output, IIngredient[][] pattern) {
-        CraftTweakerAPI.apply(new AddRecipe(name, toShaped(output, pattern)));
-    }
-
     private static IRecipe toShapeless(IItemStack output, IIngredient[] ingredients) {
         NonNullList<Ingredient> list = NonNullList.create();
         for (IIngredient ingredient : ingredients) {
@@ -43,16 +38,24 @@ public final class SupremeCraftingZen {
         return new SupremeShapelessRecipe(list, (ItemStack) output.getInternal());
     }
 
-    private static IRecipe toShaped(IItemStack output, IIngredient[][] pattern) {
+    @ZenMethod
+    public static void addShapedAt(String name, IItemStack output, int x, int y, IIngredient[][] pattern) {
+        CraftTweakerAPI.apply(new AddRecipe(name, toShaped(output, x, y, pattern)));
+    }
+
+    private static IRecipe toShaped(IItemStack output, int offsetX, int offsetY, IIngredient[][] pattern) {
         int height = pattern.length;
         int width = height == 0 ? 0 : pattern[0].length;
+        if (offsetX < 0 || offsetY < 0 || offsetX + width > 81 || offsetY + height > 81) {
+            throw new IllegalArgumentException("Pattern is outside the 81x81 supreme table");
+        }
         NonNullList<Ingredient> list = NonNullList.withSize(width * height, Ingredient.EMPTY);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 list.set(x + y * width, CraftTweakerIngredient.of(pattern[y][x]));
             }
         }
-        return new SupremeShapedRecipe(width, height, list, (ItemStack) output.getInternal());
+        return new SupremeShapedRecipe(offsetX, offsetY, width, height, list, (ItemStack) output.getInternal());
     }
 
     private static class AddRecipe implements IAction {

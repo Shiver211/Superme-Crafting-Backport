@@ -58,6 +58,8 @@ public final class SupremeJeiTransferSupport {
         Map<Integer, List<ItemStack>> targets = new HashMap<>();
         int width = Math.max(1, recipe.getWidth());
         int height = Math.max(1, recipe.getHeight());
+        int offsetX = recipe.getOffsetX();
+        int offsetY = recipe.getOffsetY();
         List<net.minecraft.item.crafting.Ingredient> ingredients = recipe.getSupremeIngredients();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -67,7 +69,7 @@ public final class SupremeJeiTransferSupport {
                 }
                 ItemStack[] stacks = ingredients.get(ingredientIndex).getMatchingStacks();
                 if (stacks.length > 0) {
-                    targets.put(SupremeTableInventory.indexOf(x, y), Arrays.asList(stacks));
+                    targets.put(SupremeTableInventory.indexOf(offsetX + x, offsetY + y), Arrays.asList(stacks));
                 }
             }
         }

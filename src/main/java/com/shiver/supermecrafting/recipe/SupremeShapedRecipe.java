@@ -7,13 +7,22 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 
 public class SupremeShapedRecipe extends SupremeRecipe {
+    private final int offsetX;
+    private final int offsetY;
     private final int width;
     private final int height;
     private final NonNullList<Ingredient> ingredients;
     private final ItemStack result;
 
     public SupremeShapedRecipe(int width, int height, NonNullList<Ingredient> ingredients, ItemStack result) {
+        this(0, 0, width, height, ingredients, result);
+    }
+
+    public SupremeShapedRecipe(int offsetX, int offsetY, int width, int height,
+                               NonNullList<Ingredient> ingredients, ItemStack result) {
         super("supreme_shaped");
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
         this.width = width;
         this.height = height;
         this.ingredients = ingredients;
@@ -22,35 +31,20 @@ public class SupremeShapedRecipe extends SupremeRecipe {
 
     @Override
     public boolean matches(SupremeTableInventory inventory, World world) {
-        SupremeCraftingMatcher.Bounds inventoryBounds = SupremeCraftingMatcher.bounds(inventory);
-        IngredientBounds recipeBounds = ingredientBounds();
-        if (inventoryBounds == null || recipeBounds == null
-                || inventoryBounds.width() != recipeBounds.width()
-                || inventoryBounds.height() != recipeBounds.height()) {
+        if (offsetX < 0 || offsetY < 0
+                || offsetX + width > SupremeTableInventory.WIDTH
+                || offsetY + height > SupremeTableInventory.HEIGHT) {
             return false;
         }
-        return matchesAligned(inventory, inventoryBounds, recipeBounds, false)
-                || matchesAligned(inventory, inventoryBounds, recipeBounds, true);
-    }
-
-    private boolean matchesAligned(SupremeTableInventory inventory, SupremeCraftingMatcher.Bounds inventoryBounds,
-                                   IngredientBounds recipeBounds, boolean mirror) {
-        int minX = mirror ? width - recipeBounds.maxX - 1 : recipeBounds.minX;
-        int startX = inventoryBounds.minX - minX;
-        int startY = inventoryBounds.minY - recipeBounds.minY;
-        return startX >= 0 && startY >= 0
-                && startX + width <= SupremeTableInventory.WIDTH
-                && startY + height <= SupremeTableInventory.HEIGHT
-                && matchesAt(inventory, startX, startY, mirror);
-    }
-
-    private boolean matchesAt(SupremeTableInventory inventory, int startX, int startY, boolean mirror) {
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int ingredientX = mirror ? width - x - 1 : x;
-                Ingredient ingredient = ingredients.get(ingredientX + y * width);
-                ItemStack stack = inventory.get(SupremeTableInventory.indexOf(startX + x, startY + y));
-                if (!ingredient.apply(stack)) {
+        for (int y = 0; y < SupremeTableInventory.HEIGHT; y++) {
+            for (int x = 0; x < SupremeTableInventory.WIDTH; x++) {
+                Ingredient ingredient = ingredientAt(x, y);
+                ItemStack stack = inventory.get(SupremeTableInventory.indexOf(x, y));
+                if (ingredient == Ingredient.EMPTY) {
+                    if (!stack.isEmpty()) {
+                        return false;
+                    }
+                } else if (!ingredient.apply(stack)) {
                     return false;
                 }
             }
@@ -58,44 +52,13 @@ public class SupremeShapedRecipe extends SupremeRecipe {
         return true;
     }
 
-    private IngredientBounds ingredientBounds() {
-        int minX = width;
-        int minY = height;
-        int maxX = -1;
-        int maxY = -1;
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                if (ingredients.get(x + y * width) != Ingredient.EMPTY) {
-                    if (x < minX) minX = x;
-                    if (y < minY) minY = y;
-                    if (x > maxX) maxX = x;
-                    if (y > maxY) maxY = y;
-                }
-            }
+    private Ingredient ingredientAt(int tableX, int tableY) {
+        int x = tableX - offsetX;
+        int y = tableY - offsetY;
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return Ingredient.EMPTY;
         }
-        return maxX < 0 ? null : new IngredientBounds(minX, minY, maxX, maxY);
-    }
-
-    private static final class IngredientBounds {
-        private final int minX;
-        private final int minY;
-        private final int maxX;
-        private final int maxY;
-
-        private IngredientBounds(int minX, int minY, int maxX, int maxY) {
-            this.minX = minX;
-            this.minY = minY;
-            this.maxX = maxX;
-            this.maxY = maxY;
-        }
-
-        private int width() {
-            return maxX - minX + 1;
-        }
-
-        private int height() {
-            return maxY - minY + 1;
-        }
+        return ingredients.get(x + y * width);
     }
 
     @Override
@@ -106,6 +69,16 @@ public class SupremeShapedRecipe extends SupremeRecipe {
     @Override
     public NonNullList<Ingredient> getSupremeIngredients() {
         return ingredients;
+    }
+
+    @Override
+    public int getOffsetX() {
+        return offsetX;
+    }
+
+    @Override
+    public int getOffsetY() {
+        return offsetY;
     }
 
     @Override
