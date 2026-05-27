@@ -4,9 +4,7 @@ import com.shiver.supermecrafting.table.SupremeTableInventory;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
@@ -31,10 +29,6 @@ public final class SupremeCraftingMatcher {
             if (recipe instanceof SupremeRecipe && ((SupremeRecipe) recipe).matches(inventory, world)) {
                 return recipe;
             }
-        }
-        InventoryCrafting crafting = craftingInventory(inventory);
-        if (crafting != null) {
-            return CraftingManager.findMatchingRecipe(crafting, world);
         }
         return null;
     }
