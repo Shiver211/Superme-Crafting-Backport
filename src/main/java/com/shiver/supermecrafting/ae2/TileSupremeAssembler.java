@@ -1,5 +1,10 @@
 package com.shiver.supermecrafting.ae2;
 
+import appeng.api.AEApi;
+import appeng.api.networking.IGridHost;
+import appeng.api.networking.IGridNode;
+import appeng.api.util.AECableType;
+import appeng.api.util.AEPartLocation;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -8,7 +13,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
 
-public class TileSupremeAssembler extends TileEntity implements ITickable {
+public class TileSupremeAssembler extends TileEntity implements ITickable, IGridHost {
+    private static final String NODE_TAG = "ae2Node";
     private static final int CRAFT_TICKS = 20;
 
     private final NonNullList<ItemStack> inputs = NonNullList.create();
@@ -16,6 +22,8 @@ public class TileSupremeAssembler extends TileEntity implements ITickable {
     private int remainingTicks;
     private long interfacePos;
     private boolean crafted;
+    private Object ae2Node;
+    private NBTTagCompound ae2NodeData;
 
     public boolean isBusy() {
         return remainingTicks > 0 || !outputs.isEmpty();
@@ -71,8 +79,67 @@ public class TileSupremeAssembler extends TileEntity implements ITickable {
     }
 
     @Override
+    public IGridNode getGridNode(AEPartLocation dir) {
+        IGridNode node = (IGridNode) ae2Node;
+        if (node == null && world != null && !world.isRemote && !isInvalid()) {
+            node = AEApi.instance().grid().createGridNode(new SupremeAssemblerGridBlock(this));
+            ae2Node = node;
+            if (ae2NodeData != null) {
+                node.loadFromNBT(NODE_TAG, ae2NodeData);
+                ae2NodeData = null;
+            }
+            node.updateState();
+        }
+        return node;
+    }
+
+    @Override
+    public AECableType getCableConnectionType(AEPartLocation dir) {
+        return AECableType.COVERED;
+    }
+
+    @Override
+    public void securityBreak() {
+        if (world != null) {
+            world.destroyBlock(pos, true);
+        }
+    }
+
+    @Override
+    public void validate() {
+        super.validate();
+        if (world != null && !world.isRemote) {
+            getGridNode(AEPartLocation.INTERNAL);
+        }
+    }
+
+    @Override
+    public void invalidate() {
+        destroyNode();
+        super.invalidate();
+    }
+
+    @Override
+    public void onChunkUnload() {
+        destroyNode();
+        super.onChunkUnload();
+    }
+
+    private void destroyNode() {
+        IGridNode node = (IGridNode) ae2Node;
+        if (node != null) {
+            node.destroy();
+            ae2Node = null;
+        }
+    }
+
+    @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         super.writeToNBT(compound);
+        IGridNode node = (IGridNode) ae2Node;
+        if (node != null) {
+            node.saveToNBT(NODE_TAG, compound);
+        }
         compound.setInteger("RemainingTicks", remainingTicks);
         compound.setLong("InterfacePos", interfacePos);
         compound.setBoolean("Crafted", crafted);
@@ -92,6 +159,7 @@ public class TileSupremeAssembler extends TileEntity implements ITickable {
     @Override
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
+        ae2NodeData = compound;
         remainingTicks = compound.getInteger("RemainingTicks");
         interfacePos = compound.getLong("InterfacePos");
         crafted = compound.getBoolean("Crafted");
