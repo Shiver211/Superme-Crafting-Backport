@@ -57,7 +57,7 @@ public class SupremeInterfaceGridBlock implements IGridBlock {
         return tile;
     }
 
-    @Override public void gridChanged() {}
+    @Override public void gridChanged() { tile.gridChanged(); }
 
     @Override
     @Nonnull

@@ -9,7 +9,10 @@ import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.networking.crafting.ICraftingProviderHelper;
 import appeng.api.networking.energy.IEnergyGrid;
+import appeng.api.networking.events.MENetworkChannelsChanged;
 import appeng.api.networking.events.MENetworkCraftingPatternChange;
+import appeng.api.networking.events.MENetworkEventSubscribe;
+import appeng.api.networking.events.MENetworkPowerStatusChange;
 import appeng.api.networking.security.IActionHost;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.networking.storage.IStorageGrid;
@@ -38,24 +41,51 @@ import java.util.Optional;
 
 public class TileSupremeInterface extends TileEntity implements IInventory, IGridHost, IActionHost, ICraftingProvider, ITickable {
     private static final String NODE_TAG = "ae2Node";
+    private static final int AE_REFRESH_TICKS = 20;
     public static final int PATTERN_SLOTS = 36;
 
     private final NonNullList<ItemStack> patterns = NonNullList.withSize(PATTERN_SLOTS, ItemStack.EMPTY);
     private final NonNullList<ItemStack> pendingOutputs = NonNullList.create();
     private List<BlockPos> lastAssemblerPositions = new ArrayList<>();
     private boolean patternChangePending;
+    private int aeRefreshTicks;
     private Object ae2Node;
     private NBTTagCompound ae2NodeData;
+
+    @MENetworkEventSubscribe
+    public void onChannelsChanged(MENetworkChannelsChanged event) {
+        queuePatternChange();
+    }
+
+    @MENetworkEventSubscribe
+    public void onPowerStatusChanged(MENetworkPowerStatusChange event) {
+        queuePatternChange();
+    }
 
     @Override
     public void update() {
         if (world != null && !world.isRemote) {
+            refreshAeNode();
             retryOutputs();
             refreshAssemblerPositions();
             if (patternChangePending) {
                 patternChangePending = !postPatternChange();
             }
         }
+    }
+
+    private void refreshAeNode() {
+        if (aeRefreshTicks-- > 0) {
+            IGridNode node = getGridNode(AEPartLocation.INTERNAL);
+            if (node != null) {
+                node.updateState();
+            }
+            queuePatternChange();
+        }
+    }
+
+    public void gridChanged() {
+        queuePatternChange();
     }
 
     @Override
@@ -265,6 +295,7 @@ public class TileSupremeInterface extends TileEntity implements IInventory, IGri
     public void validate() {
         super.validate();
         if (world != null && !world.isRemote) {
+            aeRefreshTicks = AE_REFRESH_TICKS;
             getGridNode(AEPartLocation.INTERNAL);
         }
     }
@@ -296,6 +327,12 @@ public class TileSupremeInterface extends TileEntity implements IInventory, IGri
             return true;
         }
         return false;
+    }
+
+    private void queuePatternChange() {
+        if (!isEmpty()) {
+            patternChangePending = true;
+        }
     }
 
     @Override public int getSizeInventory() { return PATTERN_SLOTS; }
@@ -365,6 +402,7 @@ public class TileSupremeInterface extends TileEntity implements IInventory, IGri
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
         ae2NodeData = compound;
+        aeRefreshTicks = AE_REFRESH_TICKS;
         readFixedList(compound.getTagList("Patterns", 10), patterns);
         pendingOutputs.clear();
         readGrowList(compound.getTagList("PendingOutputs", 10), pendingOutputs);

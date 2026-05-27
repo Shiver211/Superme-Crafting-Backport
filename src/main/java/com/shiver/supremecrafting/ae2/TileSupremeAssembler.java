@@ -16,12 +16,14 @@ import net.minecraft.util.NonNullList;
 public class TileSupremeAssembler extends TileEntity implements ITickable, IGridHost {
     private static final String NODE_TAG = "ae2Node";
     private static final int CRAFT_TICKS = 20;
+    private static final int AE_REFRESH_TICKS = 20;
 
     private final NonNullList<ItemStack> inputs = NonNullList.create();
     private final NonNullList<ItemStack> outputs = NonNullList.create();
     private int remainingTicks;
     private long interfacePos;
     private boolean crafted;
+    private int aeRefreshTicks;
     private Object ae2Node;
     private NBTTagCompound ae2NodeData;
 
@@ -54,7 +56,11 @@ public class TileSupremeAssembler extends TileEntity implements ITickable, IGrid
 
     @Override
     public void update() {
-        if (world == null || world.isRemote || remainingTicks <= 0) {
+        if (world == null || world.isRemote) {
+            return;
+        }
+        refreshAeNode();
+        if (remainingTicks <= 0) {
             return;
         }
         remainingTicks--;
@@ -74,6 +80,15 @@ public class TileSupremeAssembler extends TileEntity implements ITickable, IGrid
                 markDirty();
             } else {
                 remainingTicks = 1;
+            }
+        }
+    }
+
+    private void refreshAeNode() {
+        if (aeRefreshTicks-- > 0) {
+            IGridNode node = getGridNode(AEPartLocation.INTERNAL);
+            if (node != null) {
+                node.updateState();
             }
         }
     }
@@ -109,6 +124,7 @@ public class TileSupremeAssembler extends TileEntity implements ITickable, IGrid
     public void validate() {
         super.validate();
         if (world != null && !world.isRemote) {
+            aeRefreshTicks = AE_REFRESH_TICKS;
             getGridNode(AEPartLocation.INTERNAL);
         }
     }
@@ -160,6 +176,7 @@ public class TileSupremeAssembler extends TileEntity implements ITickable, IGrid
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
         ae2NodeData = compound;
+        aeRefreshTicks = AE_REFRESH_TICKS;
         remainingTicks = compound.getInteger("RemainingTicks");
         interfacePos = compound.getLong("InterfacePos");
         crafted = compound.getBoolean("Crafted");
