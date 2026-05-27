@@ -9,9 +9,13 @@ import net.minecraftforge.fml.common.Loader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class SupremeRecipeScriptExporter {
     private static final String FILE_NAME = "supreme_crafting_generated.zs";
+    private static final String EMPTY_TOKEN = "___";
+    private static final char[] TOKEN_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".toCharArray();
 
     private SupremeRecipeScriptExporter() {
     }
@@ -37,23 +41,76 @@ public final class SupremeRecipeScriptExporter {
         out.append("SupremeCrafting.addShaped(\"").append(name).append("\", ")
                 .append(stack(output, true)).append(", ")
                 .append(bounds.minX).append(", ").append(bounds.minY).append(", [\n");
+        List<ItemStack> inputs = uniqueInputs(inventory, bounds);
         for (int y = bounds.minY; y <= bounds.maxY; y++) {
-            out.append("    [");
+            out.append("    \"");
             for (int x = bounds.minX; x <= bounds.maxX; x++) {
                 if (x > bounds.minX) {
-                    out.append(", ");
+                    out.append(" ");
                 }
                 ItemStack input = inventory.get(SupremeTableInventory.indexOf(x, y));
-                out.append(input.isEmpty() ? "null" : stack(input, false));
+                out.append(input.isEmpty() ? EMPTY_TOKEN : token(indexOf(inputs, input)));
             }
-            out.append("]");
+            out.append("\"");
             if (y < bounds.maxY) {
+                out.append(",");
+            }
+            out.append("\n");
+        }
+        out.append("], [\n");
+        for (int i = 0; i < inputs.size(); i++) {
+            out.append("    \"").append(token(i)).append("\"");
+            if (i < inputs.size() - 1) {
+                out.append(",");
+            }
+            out.append("\n");
+        }
+        out.append("], [\n");
+        for (int i = 0; i < inputs.size(); i++) {
+            out.append("    ").append(stack(inputs.get(i), false));
+            if (i < inputs.size() - 1) {
                 out.append(",");
             }
             out.append("\n");
         }
         out.append("]);\n\n");
         return out.toString();
+    }
+
+    private static List<ItemStack> uniqueInputs(SupremeTableInventory inventory, SupremeCraftingMatcher.Bounds bounds) {
+        List<ItemStack> inputs = new ArrayList<>();
+        for (int y = bounds.minY; y <= bounds.maxY; y++) {
+            for (int x = bounds.minX; x <= bounds.maxX; x++) {
+                ItemStack input = inventory.get(SupremeTableInventory.indexOf(x, y));
+                if (!input.isEmpty() && indexOf(inputs, input) < 0) {
+                    inputs.add(input.copy());
+                }
+            }
+        }
+        return inputs;
+    }
+
+    private static int indexOf(List<ItemStack> inputs, ItemStack stack) {
+        for (int i = 0; i < inputs.size(); i++) {
+            if (sameStack(inputs.get(i), stack)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static boolean sameStack(ItemStack a, ItemStack b) {
+        return ItemStack.areItemsEqual(a, b) && ItemStack.areItemStackTagsEqual(a, b);
+    }
+
+    private static String token(int index) {
+        if (index < 0 || index >= TOKEN_CHARS.length * TOKEN_CHARS.length * TOKEN_CHARS.length) {
+            throw new ExportException("supreme_crafting.message.script_export.too_many_ingredients");
+        }
+        int first = index / (TOKEN_CHARS.length * TOKEN_CHARS.length);
+        int second = (index / TOKEN_CHARS.length) % TOKEN_CHARS.length;
+        int third = index % TOKEN_CHARS.length;
+        return "" + TOKEN_CHARS[first] + TOKEN_CHARS[second] + TOKEN_CHARS[third];
     }
 
     private static String stack(ItemStack stack, boolean includeCount) {

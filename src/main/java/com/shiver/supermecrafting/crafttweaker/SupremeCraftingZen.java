@@ -17,9 +17,15 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @ZenRegister
 @ZenClass("mods.supreme_crafting.SupremeCrafting")
 public final class SupremeCraftingZen {
+    private static final int TABLE_SIZE = 81;
+    private static final int TOKEN_LENGTH = 3;
+    private static final String EMPTY_TOKEN = "___";
     private static int counter;
 
     private SupremeCraftingZen() {
@@ -39,23 +45,74 @@ public final class SupremeCraftingZen {
     }
 
     @ZenMethod
-    public static void addShaped(String name, IItemStack output, int x, int y, IIngredient[][] pattern) {
-        CraftTweakerAPI.apply(new AddRecipe(name, toShaped(output, x, y, pattern)));
+    public static void addShaped(String name, IItemStack output, int x, int y,
+                                 String[] pattern, String[] keys, IIngredient[] ingredients) {
+        CraftTweakerAPI.apply(new AddRecipe(name, toShaped(output, x, y, pattern, keys, ingredients)));
     }
 
-    private static IRecipe toShaped(IItemStack output, int offsetX, int offsetY, IIngredient[][] pattern) {
+    private static IRecipe toShaped(IItemStack output, int offsetX, int offsetY,
+                                    String[] pattern, String[] keys, IIngredient[] ingredients) {
         int height = pattern.length;
-        int width = height == 0 ? 0 : pattern[0].length;
-        if (offsetX < 0 || offsetY < 0 || offsetX + width > 81 || offsetY + height > 81) {
+        int width = height == 0 ? 0 : tokens(pattern[0]).length;
+        if (height == 0 || width == 0) {
+            throw new IllegalArgumentException("Pattern must not be empty");
+        }
+        if (offsetX < 0 || offsetY < 0 || offsetX + width > TABLE_SIZE || offsetY + height > TABLE_SIZE) {
             throw new IllegalArgumentException("Pattern is outside the 81x81 supreme table");
         }
+        Map<String, Ingredient> key = key(keys, ingredients);
         NonNullList<Ingredient> list = NonNullList.withSize(width * height, Ingredient.EMPTY);
         for (int y = 0; y < height; y++) {
+            String[] row = tokens(pattern[y]);
+            if (row.length != width) {
+                throw new IllegalArgumentException("Pattern rows must have the same width");
+            }
             for (int x = 0; x < width; x++) {
-                list.set(x + y * width, CraftTweakerIngredient.of(pattern[y][x]));
+                String token = row[x];
+                list.set(x + y * width, EMPTY_TOKEN.equals(token) ? Ingredient.EMPTY : ingredient(token, key));
             }
         }
         return new SupremeShapedRecipe(offsetX, offsetY, width, height, list, (ItemStack) output.getInternal());
+    }
+
+    private static Map<String, Ingredient> key(String[] keys, IIngredient[] ingredients) {
+        if (keys.length != ingredients.length) {
+            throw new IllegalArgumentException("Key count must match ingredient count");
+        }
+        Map<String, Ingredient> key = new HashMap<>();
+        for (int i = 0; i < keys.length; i++) {
+            String token = keys[i];
+            validateToken(token);
+            if (EMPTY_TOKEN.equals(token)) {
+                throw new IllegalArgumentException("___ is reserved for empty slots");
+            }
+            if (key.put(token, CraftTweakerIngredient.of(ingredients[i])) != null) {
+                throw new IllegalArgumentException("Duplicate token " + token);
+            }
+        }
+        return key;
+    }
+
+    private static Ingredient ingredient(String token, Map<String, Ingredient> key) {
+        validateToken(token);
+        Ingredient ingredient = key.get(token);
+        if (ingredient == null) {
+            throw new IllegalArgumentException("Unknown token " + token);
+        }
+        return ingredient;
+    }
+
+    private static void validateToken(String token) {
+        if (token == null || token.length() != TOKEN_LENGTH) {
+            throw new IllegalArgumentException("Token must be exactly 3 characters");
+        }
+    }
+
+    private static String[] tokens(String row) {
+        if (row == null || row.trim().isEmpty()) {
+            throw new IllegalArgumentException("Pattern row must not be empty");
+        }
+        return row.trim().split("\\s+");
     }
 
     private static class AddRecipe implements IAction {

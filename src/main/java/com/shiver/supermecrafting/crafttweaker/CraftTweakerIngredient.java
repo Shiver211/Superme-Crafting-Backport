@@ -1,5 +1,6 @@
 package com.shiver.supermecrafting.crafttweaker;
 
+import crafttweaker.api.minecraft.CraftTweakerMC;
 import crafttweaker.api.item.IIngredient;
 import crafttweaker.api.item.IItemStack;
 import net.minecraft.item.ItemStack;
@@ -19,17 +20,7 @@ public class CraftTweakerIngredient extends Ingredient {
 
     @Override
     public boolean apply(ItemStack stack) {
-        for (IItemStack candidate : ingredient.getItems()) {
-            Object internal = candidate.getInternal();
-            if (internal instanceof ItemStack) {
-                ItemStack itemStack = (ItemStack) internal;
-                if (ItemStack.areItemsEqual(itemStack, stack)
-                        && (itemStack.getMetadata() == 32767 || itemStack.getMetadata() == stack.getMetadata())) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return ingredient.matches(CraftTweakerMC.getIItemStackForMatching(stack));
     }
 
     @Override
