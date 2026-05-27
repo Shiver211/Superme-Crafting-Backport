@@ -1,6 +1,6 @@
-# supreme Crafting Backport
+# Supreme Crafting Backport
 
-supreme Crafting 的 1.12.2 移植版本
+Supreme Crafting 的 1.12.2 移植版本
 
 添加了 81x81 的至尊工作台、自定义至尊合成配方、CraftTweaker 脚本支持、JEI 联动、 AE2UEL 联动，以及巨型至尊熔炉多方块结构。
 
@@ -36,7 +36,7 @@ supreme Crafting 的 1.12.2 移植版本
 
 https://github.com/x8vxv8x/test-photo
 
-# supreme Crafting Backport
+# Supreme Crafting Backport
 
 Adds an 81x81 Supreme Table, custom Supreme Crafting recipes, CraftTweaker scripting support, JEI integration, optional AE2UEL automation support, and massive Supreme Furnace multiblocks.
 
