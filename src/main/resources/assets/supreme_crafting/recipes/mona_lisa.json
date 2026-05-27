@@ -244,7 +244,8 @@
     }
   },
   "result": {
-    "item": "minecraft:diamond",
-    "count": 1
+    "item": "minecraft:paper",
+    "count": 1,
+    "nbt": "{display:{Name:\"mona_lisa\"}}"
   }
 }
