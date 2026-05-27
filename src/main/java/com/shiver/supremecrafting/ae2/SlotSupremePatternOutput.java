@@ -1,0 +1,16 @@
+package com.shiver.supremecrafting.ae2;
+
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
+
+public class SlotSupremePatternOutput extends Slot {
+    public SlotSupremePatternOutput(IInventory inventoryIn, int index, int xPosition, int yPosition) {
+        super(inventoryIn, index, xPosition, yPosition);
+    }
+
+    @Override
+    public boolean isItemValid(ItemStack stack) {
+        return false;
+    }
+}

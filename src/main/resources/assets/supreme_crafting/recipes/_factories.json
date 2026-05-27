@@ -1,6 +1,6 @@
 {
   "recipes": {
-    "supreme_shaped": "com.shiver.supermecrafting.recipe.SupremeShapedFactory",
-    "supreme_shapeless": "com.shiver.supermecrafting.recipe.SupremeShapelessFactory"
+    "supreme_shaped": "com.shiver.supremecrafting.recipe.SupremeShapedFactory",
+    "supreme_shapeless": "com.shiver.supremecrafting.recipe.SupremeShapelessFactory"
   }
 }
